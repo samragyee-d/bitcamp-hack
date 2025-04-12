@@ -27,12 +27,16 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
 '''
 pip install flask opencv-python torch torchvision
-git clone https://github.com/ultralytics/yolov5  # If using YOLOv5
+git clone https://github.com/ultralytics/yolov5
 cd yolov5
 pip install -r requirements.txt
 '''
 # List of phone-like classes to detect (YOLOv5 doesn't explicitly have "phone")
 PHONE_CLASSES = ['cell phone']
+
+# Load Haar cascade for face detection
+face_cascade_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(face_cascade_path)
 
 # More SQL setup
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
@@ -55,7 +59,7 @@ def generate_frames():
             # Yield frame in multipart format
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
-    cap = cv2.VideoCapture(0)
+    '''cap = cv2.VideoCapture(0)
     while True:
         success, frame = cap.read()
         if not success:
@@ -71,6 +75,36 @@ def generate_frames():
                 cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
                 cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
+    cap = cv2.VideoCapture(0)
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Face detection using Haar cascade
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.putText(frame, 'Face', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
+        # Phone detection using YOLOv5
+        results = model(frame[..., ::-1])  # BGR to RGB
+
+        for det in results.xyxy[0]:
+            xmin, ymin, xmax, ymax, conf, cls = det
+            label = results.names[int(cls)]
+            if label in PHONE_CLASSES:
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+                cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin) - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        # Return frame
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
