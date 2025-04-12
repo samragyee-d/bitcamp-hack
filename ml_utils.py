@@ -62,7 +62,7 @@ break_alert_sent = False
 def generate_frames():
     cap = cv2.VideoCapture(0)
 
-    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes
+    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent
 
     while True:
         success, frame = cap.read()
