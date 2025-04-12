@@ -6,7 +6,6 @@ from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
-import google.generativeai as genai
 from werkzeug.security import generate_password_hash, check_password_hash
 
 #SQL setup
@@ -16,12 +15,6 @@ import os
 
 #Import Environment Variables
 load_dotenv()
-
-# Load Haar Cascade + emotion detection model
-face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
-emotion_model = load_model('emotion_detection_model_100epochs.h5')
-class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
-
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)  # 0 = default webcam
@@ -78,7 +71,7 @@ def login():
     return render_template('Login.html')
 
 @app.route('/video')
-def vdeo():
+def video():
     return render_template('video.html')  # HTML with <img src="/video_feed">
 
 @app.route('/video_feed')
