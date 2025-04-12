@@ -106,7 +106,7 @@ def register():
         
     return render_template('registration.html')
 
-@app.route('/video')
+@app.route('/')
 def video():
     return render_template('video.html')  # HTML with <img src="/video_feed">
 

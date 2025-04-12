@@ -23,7 +23,6 @@ emotion_labels = {
 emotion_model = load_model(
     "models/facialemotionmodel.h5"
 )
-
 # Load YOLOv5 model (nano version for performance)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5
