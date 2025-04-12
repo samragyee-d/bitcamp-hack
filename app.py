@@ -37,34 +37,17 @@ def generate_frames():
         if not success:
             break
         else:
-            # Convert to grayscale for face detection
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_classifier.detectMultiScale(gray, 1.3, 5)
+            # Optional: resize the frame or do processing here
+            # frame = cv2.resize(frame, (640, 480))
 
-            for (x, y, w, h) in faces:
-                # Draw face box
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-
-                # Extract face ROI and preprocess
-                roi_gray = gray[y:y+h, x:x+w]
-                roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
-                roi = roi_gray.astype('float') / 255.0
-                roi = img_to_array(roi)
-                roi = np.expand_dims(roi, axis=0)
-
-                # Predict emotion
-                preds = emotion_model.predict(roi)[0]
-                label = class_labels[preds.argmax()]
-                label_position = (x, y - 10)
-                cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-            # Convert frame to bytes
+            # Encode frame as JPEG
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
 
-            # Yield as video stream
+            # Yield frame in multipart format
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
