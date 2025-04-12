@@ -15,6 +15,10 @@ from tensorflow.keras.models import load_model
 # Import Environment Variables
 load_dotenv()
 
+# Load Haar Cascade + emotion detection model
+face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
+emotion_model = load_model('emotion_detection_model_100epochs.h5')
+class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_HOST = os.getenv('MYSQL_HOST')
