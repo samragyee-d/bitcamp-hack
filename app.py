@@ -30,7 +30,7 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
 
 # Load the Emotion Recognition Model
-json_file = open("/Users/alvianaqvi/vsc_code/bitcamp-hack-alvia/Emotion-recognition/models/facial-emotion-recognition-higher-accuracy/facialemotionmodel.json", "r")
+json_file = open(r"facial-emotion-recognition-higher-accuracy\facialemotionmodel.json", "r")
 model_json = json_file.read()
 json_file.close()
 emotion_model = load_model("facial-emotion-recognition-higher-accuracy/facialemotionmodel.h5")
@@ -112,6 +112,7 @@ def login():
         result = cursor.fetchone()
         cursor.close()
         conn.close()
+        
 
         # Check if user exists and if the password matches
         if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
@@ -131,7 +132,7 @@ def register():
 
 
         if not username or not email or not password:
-            return render_template('register.html', message='Please fill out all fields.')
+            return render_template('registration.html', message='Please fill out all fields.')
 
 
         try:
@@ -148,6 +149,7 @@ def register():
             )
            
             cursor = connection.cursor()
+            
 
 
             # Insert the user into the database
@@ -158,17 +160,16 @@ def register():
 
             cursor.close()
             connection.close()
+            
 
-
-            return render_template('registration.html', message='Registration successful!')
-
+            return render_template('video.html', message='Registration successful!')
 
         except mysql.connector.Error as err:
             print(f"Error during insert: {err}")
             return render_template('registration.html', message=f"Error: {err}")
-
-
+        
     return render_template('registration.html')
+
 
 
 @app.route('/video')
