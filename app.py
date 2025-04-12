@@ -93,6 +93,7 @@ def login():
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
 
+
 #Register User
 
 @app.route('/register', methods=['GET', 'POST'])
