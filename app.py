@@ -25,7 +25,12 @@ app = Flask(__name__)
 # Load YOLOv5 model from torch hub
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
-
+'''
+pip install flask opencv-python torch torchvision
+git clone https://github.com/ultralytics/yolov5  # If using YOLOv5
+cd yolov5
+pip install -r requirements.txt
+'''
 # List of phone-like classes to detect (YOLOv5 doesn't explicitly have "phone")
 PHONE_CLASSES = ['cell phone']
 
