@@ -84,18 +84,36 @@ def login():
         user_input = request.form['username']
         password = request.form['password']
 
-        cursor.execute("SELECT * FROM users WHERE (username=%s OR email=%s) AND password=%s", (user_input, user_input, password))
+        cursor.execute("SELECT password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
         result = cursor.fetchone()
 
-        if result:
+        if result and check_password_hash(result[0], password):
             return "Login successful!"
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
 
-    return render_template('login.html')
-
 #Register User
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+
+        hashed_pw = generate_password_hash(password)
+
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+                       (username, email, hashed_pw))
+        conn.commit()
+
+        flash("Registration successful! Please log in.")
+        return redirect(url_for('login'))
+
+    return render_template('register.html')  # You'll need to create this HTML
+
+
 
 
 @app.route('/video')
