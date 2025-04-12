@@ -7,6 +7,8 @@ from keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
 from werkzeug.security import generate_password_hash, check_password_hash
+import torch
+
 
 #SQL setup
 import mysql.connector
@@ -24,7 +26,7 @@ FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
 
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
-emotion_model = load_model('emotion_detection_model_100epochs.h5')
+#emotion_model = load_model('emotion_detection_model_100epochs.h5')
 class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
 
@@ -123,7 +125,7 @@ def generate_frames():
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
-        email = request.form.get('email')  # Added for email
+        email = request.form.get('email')
         password = request.form.get('password')
 
         if not username or not email or not password:
@@ -151,8 +153,6 @@ def register():
             return render_template('registration.html', message=f"Error: {err}")
 
     return render_template('registration.html')  # Changed to render 'register.html' for GET method
-print("MYSQL_PASSWORD:", os.getenv('MYSQL_PASSWORD'))
-print("MYSQL_DATABASE:", os.getenv('MYSQL_DATABASE'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
