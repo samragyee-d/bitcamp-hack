@@ -8,6 +8,14 @@ import cv2
 import numpy as np
 import google.generativeai as genai
 
+
+
+#SQL setup
+import mysql.connector
+from dotenv import load_dotenv
+import os
+
+
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
 emotion_model = load_model('emotion_detection_model_100epochs.h5')
