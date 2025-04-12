@@ -9,8 +9,6 @@ import numpy as np
 import google.generativeai as genai
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
-
 #SQL setup
 import mysql.connector
 from dotenv import load_dotenv
@@ -95,27 +93,6 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('Login.html')
-
-
-#Register User
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-
-        hashed_pw = generate_password_hash(password)
-
-        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                       (username, email, hashed_pw))
-        conn.commit()
-
-        flash("Registration successful! Please log in.")
-        return redirect(url_for('login'))
-
-    return render_template('register.html')  # You'll need to create this HTML
 
 @app.route('/video')
 def vdeo():
