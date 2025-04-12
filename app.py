@@ -161,6 +161,11 @@ def register():
 
     return render_template('registration.html')
 
+
+@app.route('/video')
+def video():
+    return render_template('video.html')  # HTML with <img src="/video_feed">
+
 # Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -185,16 +190,14 @@ def login():
 
         # Check if user exists and if the password matches
         if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
-            return "Login successful!"
+            return video()
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
 
     return render_template('Login.html')
 
-@app.route('/video')
-def video():
-    return render_template('video.html')  # HTML with <img src="/video_feed">
+
 
 @app.route('/video_feed')
 def video_feed():
