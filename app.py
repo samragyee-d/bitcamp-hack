@@ -6,6 +6,7 @@ from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
+import google.generativeai as genai
 
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
