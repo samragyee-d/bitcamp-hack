@@ -17,7 +17,17 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-camera = cv2.VideoCapture(0)  # 0 = default webcam
+import cv2
+import torch
+
+app = Flask(__name__)
+
+# Load YOLOv5 model from torch hub
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+model.conf = 0.5  # confidence threshold
+
+# List of phone-like classes to detect (YOLOv5 doesn't explicitly have "phone")
+PHONE_CLASSES = ['cell phone']
 
 # More SQL setup
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
@@ -25,7 +35,7 @@ mysql_password = os.getenv('MYSQL_PASSWORD')
 
 
 def generate_frames():
-    while True:
+    '''while True:
         success, frame = camera.read()
         if not success:
             break
@@ -39,7 +49,27 @@ def generate_frames():
 
             # Yield frame in multipart format
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
+    cap = cv2.VideoCapture(0)
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Convert frame to RGB for YOLO
+        results = model(frame[..., ::-1])  # BGR to RGB
+
+        for det in results.xyxy[0]:
+            xmin, ymin, xmax, ymax, conf, cls = det
+            label = results.names[int(cls)]
+            if label in PHONE_CLASSES:
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+                cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 
