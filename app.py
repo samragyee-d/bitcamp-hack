@@ -134,7 +134,6 @@ def register():
         if not username or not email or not password:
             return render_template('registration.html', message='Please fill out all fields.')
 
-
         try:
             # Hash the password using bcrypt
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -150,8 +149,6 @@ def register():
            
             cursor = connection.cursor()
             
-
-
             # Insert the user into the database
             insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
             cursor.execute(insert_query, (username, email, hashed_password))
@@ -169,8 +166,6 @@ def register():
             return render_template('registration.html', message=f"Error: {err}")
         
     return render_template('registration.html')
-
-
 
 @app.route('/video')
 def video():
