@@ -40,36 +40,35 @@ function captureFrame() {
   }
 }
 
-// Get the webcam stream and set up the MediaRecorder
 async function initializeWebcam() {
   try {
+    console.log("Initializing webcam...");
     stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    console.log("Webcam stream obtained:", stream);
+    const videoElement = document.getElementById('preview');
+    console.log("Preview video element:", videoElement);
     videoElement.srcObject = stream;
+    console.log("Stream assigned to preview element.");
 
-    // Create the media recorder once the stream is available
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         recordedChunks.push(event.data);
       }
     };
-    
+
     mediaRecorder.onstop = () => {
-      // Combine the recorded chunks and create a blob (video)
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
       const videoURL = URL.createObjectURL(blob);
-
-      // Show the recorded video in the replay section
       const replayElement = document.getElementById('replay');
       replayElement.src = videoURL;
-      replayElement.style.display = 'block'; // Show the recorded video
+      replayElement.style.display = 'block';
     };
 
   } catch (error) {
     console.error("Error accessing webcam: ", error);
   }
 }
-
 // Call the function to initialize the webcam when the page loads
 initializeWebcam();
 

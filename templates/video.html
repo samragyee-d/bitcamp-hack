@@ -1,14 +1,21 @@
 {% extends 'navbar.html' %}
+
+{% block title %}Webcam Recorder{% endblock %}
+
+{% block header %}
+<h1>Webcam Recorder</h1>
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="/static/css/video.css">
 <div class="container">
   <!-- Left: Webcam Recorder -->
   <div class="card">
-    {% block header %}
-    <h1> {% block title %}Webcam Recorder{% endblock %}</h1>
-    {% endblock %}
-    {% block content %}
+    <h2>Webcam Recorder</h2>
     <div id="timer">Recording Time: 0s</div>
     <video id="preview" autoplay muted></video>
     <video id="replay" controls style="display:none;"></video>
+
     <div class="controls">
       <button class="play" id="startBtn">&#9658;</button>
       <button class="pause" id="pauseBtn">&#10073;&#10073;</button>
@@ -18,8 +25,10 @@
 
   <!-- Right: ML Live Feed -->
   <div class="card">
-    <h1>ML Live Feed</h1>
-    <img class="stream" src="{{ url_for('video_feed') }}" alt="Live Stream" width="640" height="480">
+    <h2>ML Live Feed</h2>
+    <img class="stream" src="{{ url_for('video_feed') }}" alt="Live Stream">
   </div>
-  {% endblock %}
 </div>
+
+<script src="script/js/script.js'"></script>
+{% endblock %}
