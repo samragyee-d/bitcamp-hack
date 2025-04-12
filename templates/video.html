@@ -2,10 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Webcam Feed</title>
+  <title>Webcam Recorder</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #20c997; /* Teal background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.card {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  color: #0b5e4a;
+  margin-bottom: 10px;
+}
+
+#timer {
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+video {
+  border-radius: 10px;
+  width: 640px;
+  height: 480px;
+  margin-bottom: 20px;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+.controls button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  margin: 0 10px;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.controls button:hover {
+  transform: scale(1.05);
+}
+
+.play { background: #0b5e4a; }  /* Green */
+.pause { background: #0b5e4a; } /* Yellow */
+.stop { background: #0b5e4a; }  /* Red */
+
+  </style>
 </head>
 <body>
-  <h2>Live Webcam</h2>
+  <div class="container">
+    <div class="card">
+      <h1>Webcam Recorder</h1>
+      <div id="timer">Recording Time: 0s</div>
+
+      <video id="preview" autoplay muted></video>
+      <video id="replay" controls style="display:none;"></video>
+
+      <div class="controls">
+        <button class="play" id="startBtn">&#9658;</button>
+        <button class="pause" id="pauseBtn">&#10073;&#10073;</button>
+        <button class="stop" id="stopBtn">&#9632;</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/script.js"></script>
   <img src="{{ url_for('video_feed') }}" width="640" height="480">
 </body>
 </html>
