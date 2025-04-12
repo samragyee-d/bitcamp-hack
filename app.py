@@ -6,7 +6,6 @@ from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
-import google.generativeai as genai
 from werkzeug.security import generate_password_hash, check_password_hash
 
 #SQL setup
@@ -25,12 +24,27 @@ FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
 
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
-#emotion_model = load_model('emotion_detection_model_100epochs.h5')
+emotion_model = load_model('emotion_detection_model_100epochs.h5')
 class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
 
 app = Flask(__name__)
-camera = cv2.VideoCapture(0)  # 0 = default webcam
+
+# Load YOLOv5 model from torch hub
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+model.conf = 0.5  # confidence threshold
+'''
+pip install flask opencv-python torch torchvision
+git clone https://github.com/ultralytics/yolov5
+cd yolov5
+pip install -r requirements.txt
+'''
+# List of phone-like classes to detect (YOLOv5 doesn't explicitly have "phone")
+PHONE_CLASSES = ['cell phone']
+
+# Load Haar cascade for face detection
+face_cascade_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(face_cascade_path)
 
 # More SQL setup
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
@@ -38,41 +52,73 @@ mysql_password = os.getenv('MYSQL_PASSWORD')
 
 
 def generate_frames():
-    while True:
+    '''while True:
         success, frame = camera.read()
         if not success:
             break
         else:
-            # Convert to grayscale for face detection
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_classifier.detectMultiScale(gray, 1.3, 5)
+            # Optional: resize the frame or do processing here
+            # frame = cv2.resize(frame, (640, 480))
 
-            for (x, y, w, h) in faces:
-                # Draw face box
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-
-                # Extract face ROI and preprocess
-                roi_gray = gray[y:y+h, x:x+w]
-                roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
-                roi = roi_gray.astype('float') / 255.0
-                roi = img_to_array(roi)
-                roi = np.expand_dims(roi, axis=0)
-
-                # Predict emotion
-                preds = emotion_model.predict(roi)[0]
-                label = class_labels[preds.argmax()]
-                label_position = (x, y - 10)
-                cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-            # Convert frame to bytes
+            # Encode frame as JPEG
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
 
-            # Yield as video stream
+            # Yield frame in multipart format
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
+    '''cap = cv2.VideoCapture(0)
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
 
-    
+        # Convert frame to RGB for YOLO
+        results = model(frame[..., ::-1])  # BGR to RGB
+
+        for det in results.xyxy[0]:
+            xmin, ymin, xmax, ymax, conf, cls = det
+            label = results.names[int(cls)]
+            if label in PHONE_CLASSES:
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+                cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
+    cap = cv2.VideoCapture(0)
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Face detection using Haar cascade
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.putText(frame, 'Face', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
+        # Phone detection using YOLOv5
+        results = model(frame[..., ::-1])  # BGR to RGB
+
+        for det in results.xyxy[0]:
+            xmin, ymin, xmax, ymax, conf, cls = det
+            label = results.names[int(cls)]
+            if label in PHONE_CLASSES:
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+                cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin) - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        # Return frame
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -138,7 +184,7 @@ def login():
 
 
 @app.route('/video')
-def vdeo():
+def video():
     return render_template('video.html')  # HTML with <img src="/video_feed">
 
 @app.route('/video_feed')
