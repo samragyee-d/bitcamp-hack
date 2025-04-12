@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat with Stacey</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    #chat-box {
+      width: 400px;
+      height: 400px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .user {
+      background: #d1e7dd;
+      align-self: flex-end;
+    }
+
+    .stacey {
+      background: #e2e3e5;
+      align-self: flex-start;
+    }
+
+    #input-area {
+      display: flex;
+      gap: 10px;
+      width: 400px;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #6c63ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #5a52d4;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Talk to Stacey 👩‍💻</h2>
+  <div id="chat-box"></div>
+
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("user-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      addMessage("You", msg, "user");
+      input.value = "";
+
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+
+      const data = await response.json();
+      addMessage("Stacey", data.reply, "stacey");
+    }
+
+    function addMessage(sender, text, cls) {
+      const chat = document.getElementById("chat-box");
+      const message = document.createElement("div");
+      message.classList.add("message", cls);
+      message.textContent = `${sender}: ${text}`;
+      chat.appendChild(message);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>

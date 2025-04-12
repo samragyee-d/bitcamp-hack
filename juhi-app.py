@@ -12,6 +12,12 @@ import os
 from tensorflow.keras.models import model_from_json
 from tensorflow.keras.models import load_model
 
+#Gemini setup
+from google import genai
+import os
+
+client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'));
+
 # Import Environment Variables
 load_dotenv()
 
@@ -172,6 +178,14 @@ def register():
 
 
     return render_template('registration.html')
+
+#temporary, for a chatbot demo
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_msg = request.json["message"]
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(user_msg)
+    return jsonify({"reply": response.text})
 
 @app.route('/video')
 def video():
