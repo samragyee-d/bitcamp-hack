@@ -6,6 +6,8 @@ from tensorflow.keras.models import load_model
 from dotenv import load_dotenv
 from gemini import generate_gemini_response
 import time
+import requests
+
 
 load_dotenv()
 
@@ -23,7 +25,7 @@ emotion_labels = {
 # FOR ALVIA THE ROUTE IS bitcamp-hack/models/facialemotionmodel.h5
 # FOR EVERYONE ELSE IT IS models/facialemotionmodel.h5
 emotion_model = load_model(
-    "models/facialemotionmodel.h5"
+    "bitcamp-hack/models/facialemotionmodel.h5"
 )
 # Load YOLOv5 model (nano version for performance)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
@@ -87,8 +89,9 @@ def generate_frames():
             if phone_detected_start is None:
                 phone_detected_start = time.time()
             elif not phone_alert_sent and time.time() - phone_detected_start >= phone_detection_threshold:
-                print(generate_gemini_response("Send a message scolding the user for having a phone present."))
+                response = generate_gemini_response("Send a message scolding the user for having a phone present.")
                 phone_alert_sent = True
+                requests.post("http://127.0.0.1:5000/push_system_message", json={"message": response})
         else:
             # Reset if phone not detected
             phone_detected_start = None
@@ -126,7 +129,8 @@ def generate_frames():
                 # Trigger response if threshold is exceeded
                 if negative_count >= 7:
                     if not emotion_alert_sent:
-                        print(generate_gemini_response("The user seems emotionally distressed. Please send a short comforting or encouraging message."))
+                        message = generate_gemini_response("The user seems emotionally distressed. Please send a short comforting or encouraging message.")
+                        requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                         emotion_alert_sent = True
                         comforting_message_times.append(datetime.now())
                 else:
@@ -140,7 +144,8 @@ def generate_frames():
 
                 # If too many comforting messages recently, suggest a break
                 if len(comforting_message_times) > comforting_message_limit and not break_alert_sent:
-                    print(generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break to rest and reset."))
+                    message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break to rest and reset.")
+                    requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                     break_alert_sent = True
                 elif len(comforting_message_times) <= comforting_message_limit:
                     break_alert_sent = False  # Reset once count drops

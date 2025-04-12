@@ -18,6 +18,10 @@ import os
 #Import Environment Variables
 load_dotenv()
 
+from queue import Queue
+
+system_message_queue = Queue()
+
 app = Flask(__name__)
 import cv2
 import torch
@@ -127,6 +131,36 @@ def video_feed():
     return Response(generate_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+from gemini import generate_gemini_response
+from flask import jsonify
+
+@app.route('/gemini_chat', methods=['POST'])
+def gemini_chat():
+    data = request.get_json()
+    message = data.get('message', '')
+    if not message:
+        return jsonify({'response': 'No message provided.'})
+    
+    response = generate_gemini_response(message)
+    return jsonify({'response': response})
+
+@app.route('/system_chat', methods=['GET'])
+def system_chat():
+    if not system_message_queue.empty():
+        message = system_message_queue.get()
+        return jsonify({'response': message})
+    else:
+        return jsonify({'response': None})
+
+@app.route('/push_system_message', methods=['POST'])
+def push_system_message():
+    data = request.get_json()
+    message = data.get('message', '')
+    if message:
+        system_message_queue.put(message)
+    return jsonify({'status': 'success'})
+
+
 # BASIC FLASK
 @app.route('/pagename')
 def pagename():
@@ -142,8 +176,6 @@ def submit():
     # You can process or store the data here
     return render_template('result.html', name=name, email=email)
 '''
-
-#alvia naqvi
 
 if __name__ == '__main__':
     app.run(debug=True)
