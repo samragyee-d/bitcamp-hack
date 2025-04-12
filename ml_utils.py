@@ -20,8 +20,10 @@ emotion_labels = {
 }
 
 # Load emotion model
+# FOR ALVIA THE ROUTE IS bitcamp-hack/models/facialemotionmodel.h5
+# FOR EVERYONE ELSE IT IS models/facialemotionmodel.h5
 emotion_model = load_model(
-    "models/facialemotionmodel.h5"
+    "bitcamp-hack/models/facialemotionmodel.h5"
 )
 # Load YOLOv5 model (nano version for performance)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)

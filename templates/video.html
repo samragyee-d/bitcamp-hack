@@ -1,8 +1,11 @@
+{% extends 'navbar.html' %}
 <div class="container">
   <!-- Left: Webcam Recorder -->
   <div class="card">
-    <script src="/static/js/script.js"></script>
-    <h1>Webcam Recorder</h1>
+    {% block header %}
+    <h1> {% block title %}Webcam Recorder{% endblock %}</h1>
+    {% endblock %}
+    {% block content %}
     <div id="timer">Recording Time: 0s</div>
     <video id="preview" autoplay muted></video>
     <video id="replay" controls style="display:none;"></video>
@@ -18,4 +21,5 @@
     <h1>ML Live Feed</h1>
     <img class="stream" src="{{ url_for('video_feed') }}" alt="Live Stream" width="640" height="480">
   </div>
+  {% endblock %}
 </div>
