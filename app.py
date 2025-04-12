@@ -78,7 +78,7 @@ def submit():
     return render_template('result.html', name=name, email=email)
 '''
 
-#hello
+#alvia naqvi
 
 if __name__ == '__main__':
     app.run(debug=True)
