@@ -37,7 +37,11 @@ PHONE_CLASSES = ['cell phone']
 
 # More SQL setup
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
-mysql_password = os.getenv('MYSQL_PASSWORD')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -45,12 +49,12 @@ def login():
         user_input = request.form['username']
         password = request.form['password']
 
-        # Connect to MySQL only when needed
-        conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password=os.getenv('MYSQL_PASSWORD'),
-            database="flask_auth"
+       # Connect to MySQL
+        connection = mysql.connector.connect(
+            host=MYSQL_HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD,
+            database=MYSQL_DATABASE
         )
         cursor = conn.cursor()
         cursor.execute("SELECT password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
@@ -65,6 +69,53 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('Login.html')
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+
+        if not username or not email or not password:
+            return render_template('register.html', message='Please fill out all fields.')
+
+
+        try:
+            # Hash the password using bcrypt
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+
+            # Connect to MySQL
+            connection = mysql.connector.connect(
+                host=MYSQL_HOST,
+                user=MYSQL_USER,
+                password=MYSQL_PASSWORD,
+                database=MYSQL_DATABASE
+            )
+           
+            cursor = connection.cursor()
+
+
+            # Insert the user into the database
+            insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+            cursor.execute(insert_query, (username, email, hashed_password))
+            connection.commit()
+
+
+            cursor.close()
+            connection.close()
+
+
+            return render_template('registration.html', message='Registration successful!')
+
+
+        except mysql.connector.Error as err:
+            print(f"Error during insert: {err}")
+            return render_template('registration.html', message=f"Error: {err}")
+
+
+    return render_template('registration.html')
 
 @app.route('/video')
 def video():
