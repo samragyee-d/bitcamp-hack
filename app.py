@@ -1,12 +1,13 @@
 # app.py
 
-from flask import Flask, render_template, request, redirect, url_for, Response
+from flask import Flask, render_template, request, redirect, url_for, Response, flash
 import cv2
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
 import google.generativeai as genai
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 
@@ -21,8 +22,8 @@ load_dotenv()
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password=mysql_password,
-    database="your_db_name"
+    password=os.getenv('MYSQL_PASSWORD'),
+    database="flask_auth"
 )
 cursor = conn.cursor()
 
@@ -74,6 +75,27 @@ def generate_frames():
             # Yield as video stream
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+#Login routing
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_input = request.form['username']
+        password = request.form['password']
+
+        cursor.execute("SELECT * FROM users WHERE (username=%s OR email=%s) AND password=%s", (user_input, user_input, password))
+        result = cursor.fetchone()
+
+        if result:
+            return "Login successful!"
+        else:
+            flash("Invalid credentials. Please try again.")
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+#Register User
 
 
 @app.route('/video')
