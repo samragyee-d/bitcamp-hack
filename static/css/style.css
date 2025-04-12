@@ -106,3 +106,19 @@ form .button input:hover {
 form .signup-link a:hover {
   text-decoration: underline;
 }
+
+nav a:hover {
+  font-weight: bold;
+}
+
+nav a {
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;  
+  gap: 20px; 
+  height: 100vh;
+}

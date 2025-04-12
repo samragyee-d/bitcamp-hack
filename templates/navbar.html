@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}{% endblock %} -- EvaStudy</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <nav>
-    <a href="/video">Video</a>
-    <a href="/register">Sign Up</a>
-    <a href="/login">Log In</a>
     <a href="/">Home</a>
+    <a href="/video">Video</a>
+    <a href="/login">Log In</a>
+    <a href="/register">Sign Up</a>
   </nav>
   {% block content %}{% endblock %}
 </body>
