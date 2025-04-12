@@ -2,7 +2,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # Load the model
-model = load_model("emotion_model.h5")
+model = load_model("emotion_model_2.h5")
 base_path = "images/"
 
 # number of images to feed into the NN for every batch
