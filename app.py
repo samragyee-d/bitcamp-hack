@@ -15,7 +15,12 @@ from tensorflow.keras.models import load_model
 # Import Environment Variables
 load_dotenv()
 
+import threading
 from ml_utils import generate_frames
+'''
+threading.Thread(target=camera_feed, daemon=True).start()
+threading.Thread(target=processing_loop, daemon=True).start()
+'''
 # Load enviro
 
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
