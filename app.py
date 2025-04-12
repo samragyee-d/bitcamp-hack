@@ -17,9 +17,15 @@ import os
 #Import Environment Variables
 load_dotenv()
 
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
+
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
-emotion_model = load_model('emotion_detection_model_100epochs.h5')
+#emotion_model = load_model('emotion_detection_model_100epochs.h5')
 class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
 
@@ -66,6 +72,42 @@ def generate_frames():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
+    
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')  # Added for email
+        password = request.form.get('password')
+
+        if not username or not email or not password:
+            return render_template('register.html', message='Please fill out all fields.')
+
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password=os.getenv('MYSQL_PASSWORD'),
+                database=os.getenv('MYSQL_DATABASE')
+            )
+            
+            cursor = connection.cursor()
+            insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+            cursor.execute(insert_query, (username, email, password))
+            connection.commit()
+
+            cursor.close()
+            connection.close()
+
+            return render_template('registration.html', message='Registration successful!')
+
+        except mysql.connector.Error as err:
+            return render_template('registration.html', message=f"Error: {err}")
+
+    return render_template('registration.html')  # Changed to render 'register.html' for GET method
+print("MYSQL_PASSWORD:", os.getenv('MYSQL_PASSWORD'))
+print("MYSQL_DATABASE:", os.getenv('MYSQL_DATABASE'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -86,13 +128,14 @@ def login():
         cursor.close()
         conn.close()
 
-        if result and check_password_hash(result[0], password):
+        if result and result[0] == password:
             return "Login successful!"
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
 
     return render_template('Login.html')
+
 
 @app.route('/video')
 def vdeo():
