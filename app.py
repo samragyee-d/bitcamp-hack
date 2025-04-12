@@ -30,8 +30,7 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
 
 # Load the Emotion Recognition Model
-#Get from github: https://github.com/AI-Gajendra/facial-emotion-recognition-higher-accuracy
-json_file = open(r"facial-emotion-recognition-higher-accuracy/facialemotionmodel.json", "r")
+json_file = open("/Users/alvianaqvi/vsc_code/bitcamp-hack-alvia/Emotion-recognition/models/facial-emotion-recognition-higher-accuracy/facialemotionmodel.json", "r")
 model_json = json_file.read()
 json_file.close()
 emotion_model = load_model("facial-emotion-recognition-higher-accuracy/facialemotionmodel.h5")
