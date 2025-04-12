@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #SQL setup
 import mysql.connector
 from dotenv import load_dotenv
+from ml_utils import generate_frames
 import os
 
 #Import Environment Variables
@@ -37,46 +38,6 @@ PHONE_CLASSES = ['cell phone']
 # More SQL setup
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 mysql_password = os.getenv('MYSQL_PASSWORD')
-
-
-def generate_frames():
-    '''while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            # Optional: resize the frame or do processing here
-            # frame = cv2.resize(frame, (640, 480))
-
-            # Encode frame as JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-
-            # Yield frame in multipart format
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')'''
-    cap = cv2.VideoCapture(0)
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
-
-        # Convert frame to RGB for YOLO
-        results = model(frame[..., ::-1])  # BGR to RGB
-
-        for det in results.xyxy[0]:
-            xmin, ymin, xmax, ymax, conf, cls = det
-            label = results.names[int(cls)]
-            if label in PHONE_CLASSES:
-                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
-                cv2.putText(frame, f'{label} {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -108,6 +69,10 @@ def login():
 @app.route('/video')
 def video():
     return render_template('video.html')  # HTML with <img src="/video_feed">
+
+@app.route('/backendvideo')
+def backendvideo():
+    return render_template('backendvideo.html')  # HTML with <img src="/video_feed">
 
 @app.route('/video_feed')
 def video_feed():
