@@ -1,32 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Webcam Recorder</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <h1>Webcam Recorder</h1>
-      <div id="timer">Recording Time: 0s</div>
-
-      <!-- Live Stream -->
-      <img src="{{ url_for('video_feed') }}" width="640" height="480" id="liveFeed">
-
-      <!-- Video preview and playback -->
-      <video id="preview" autoplay muted style="display:none;"></video>
-      <video id="replay" controls style="display:none;"></video>
-
-      <div class="controls">
-        <button class="play" id="startBtn">&#9658;</button>
-        <button class="pause" id="pauseBtn">&#10073;&#10073;</button>
-        <button class="stop" id="stopBtn">&#9632;</button>
-      </div>
+<div class="container">
+  <!-- Left: Webcam Recorder -->
+  <div class="card">
+    <h1>Webcam Recorder</h1>
+    <div id="timer">Recording Time: 0s</div>
+    <video id="preview" autoplay muted></video>
+    <video id="replay" controls style="display:none;"></video>
+    <div class="controls">
+      <button class="play" id="startBtn">&#9658;</button>
+      <button class="pause" id="pauseBtn">&#10073;&#10073;</button>
+      <button class="stop" id="stopBtn">&#9632;</button>
     </div>
   </div>
 
-  <!-- Link to your JavaScript -->
-  <script src="{{ url_for('static', filename='static/js/script.js') }}"></script>
-</body>
-</html>
+  <!-- Right: ML Live Feed -->
+  <div class="card">
+    <h1>ML Live Feed</h1>
+    <img class="stream" src="{{ url_for('video_feed') }}" alt="Live Stream" width="640" height="480">
+  </div>
+</div>
