@@ -7,75 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #20c997;
-  }
-
-  .container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 40px;
-    padding: 40px;
-    flex-wrap: wrap;
-  }
-
-  .card {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-
-  h1 {
-    color: #0b5e4a;
-    margin-bottom: 10px;
-  }
-
-  #timer {
-    font-size: 18px;
-    margin-bottom: 20px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  video, .stream {
-    border-radius: 10px;
-    width: 640px;
-    height: 480px;
-    margin-bottom: 20px;
-  }
-
-  .controls {
-    margin-top: 10px;
-  }
-
-  .controls button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: none;
-    margin: 0 10px;
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-
-  .controls button:hover {
-    transform: scale(1.05);
-  }
-
-  .play, .pause, .stop {
-    background: #0b5e4a;
-  }
-</style>
-
+<link rel="stylesheet" type="text/css" href="/static/css/video.css">
 <div class="container">
   <!-- Left: Webcam Recorder -->
   <div class="card">
