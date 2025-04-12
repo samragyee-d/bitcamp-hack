@@ -15,6 +15,16 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 
+#Import Environment Variables
+load_dotenv()
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password=mysql_password,
+    database="your_db_name"
+)
+cursor = conn.cursor()
 
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
@@ -24,6 +34,11 @@ class_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise
 
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)  # 0 = default webcam
+
+# More SQL setup
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
+mysql_password = os.getenv('MYSQL_PASSWORD')
+
 
 def generate_frames():
     while True:
