@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login Page</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Login</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
 </head>
 <body>
-  <div class="login-container">
-    <h2>Login</h2>
+  <div class="wrapper">
+    <div class="title"><span>Login Form</span></div>
     <form action="/login" method="POST">
-      <div class="form-group">
-        <label for="username">Username or Email</label>
-        <input type="text" id="username" name="username" required />
+      <div class="row">
+        <i class="fas fa-user"></i>
+        <input type="text" name="username" placeholder="Email or Username" required />
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
+      <div class="row">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" placeholder="Password" required />
       </div>
-      <button type="submit">Login</button>
-      <div class="note">Don't have an account? <a href="/signup">Sign up</a></div>
+      <div class="row button">
+        <input type="submit" value="Login" />
+      </div>
+      <div class="signup-link">Not a member? <a href="/registration">Signup now</a></div>
     </form>
   </div>
 </body>
