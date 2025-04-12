@@ -16,7 +16,6 @@ from tensorflow.keras.models import load_model
 load_dotenv()
 
 
-
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_HOST = os.getenv('MYSQL_HOST')
 MYSQL_USER = os.getenv('MYSQL_USER')
