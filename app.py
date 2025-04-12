@@ -10,6 +10,7 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 from tensorflow.keras.models import model_from_json
+from tensorflow.keras.models import load_model
 
 # Import Environment Variables
 load_dotenv()
@@ -91,10 +92,6 @@ def generate_frames():
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-@app.route('/video')
-def video():
-    return render_template('video.html')  # HTML with <img src="/video_feed">
 
 
 @app.route('/login', methods=['GET', 'POST'])
