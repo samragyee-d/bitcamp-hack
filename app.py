@@ -1,5 +1,5 @@
 # app.py
-
+import bcrypt
 from flask import Flask, render_template, request, redirect, url_for, Response, flash
 import cv2
 from keras.models import load_model
@@ -132,16 +132,22 @@ def register():
             return render_template('register.html', message='Please fill out all fields.')
 
         try:
+            # Hash the password using bcrypt
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+            # Connect to MySQL
             connection = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password=os.getenv('MYSQL_PASSWORD'),
-                database=os.getenv('MYSQL_DATABASE')
+                host=MYSQL_HOST,
+                user=MYSQL_USER,
+                password=MYSQL_PASSWORD,
+                database=MYSQL_DATABASE
             )
             
             cursor = connection.cursor()
+
+            # Insert the user into the database
             insert_query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
-            cursor.execute(insert_query, (username, email, password))
+            cursor.execute(insert_query, (username, email, hashed_password))
             connection.commit()
 
             cursor.close()
@@ -150,38 +156,41 @@ def register():
             return render_template('registration.html', message='Registration successful!')
 
         except mysql.connector.Error as err:
+            print(f"Error during insert: {err}")
             return render_template('registration.html', message=f"Error: {err}")
 
-    return render_template('registration.html')  # Changed to render 'register.html' for GET method
+    return render_template('registration.html')
 
-
+# Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user_input = request.form['username']
         password = request.form['password']
 
-        # Connect to MySQL only when needed
+        # Connect to MySQL
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password=os.getenv('MYSQL_PASSWORD'),
-            database="flask_auth"
+            host=MYSQL_HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD,
+            database=MYSQL_DATABASE
         )
         cursor = conn.cursor()
+
+        # Fetch the stored hashed password from the database
         cursor.execute("SELECT password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
         result = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if result and result[0] == password:
+        # Check if user exists and if the password matches
+        if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
             return "Login successful!"
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
 
     return render_template('Login.html')
-
 
 @app.route('/video')
 def video():
