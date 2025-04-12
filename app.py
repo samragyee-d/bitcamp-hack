@@ -17,10 +17,8 @@ load_dotenv()
 
 import threading
 from ml_utils import generate_frames
-'''
-threading.Thread(target=camera_feed, daemon=True).start()
-threading.Thread(target=processing_loop, daemon=True).start()
-'''
+from gemini import generate_gemini_response
+
 # Load enviro
 
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
