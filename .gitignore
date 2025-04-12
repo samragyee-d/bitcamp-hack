@@ -1,5 +1,3 @@
 .env
 __pycache__/
 
-FLASK_SECRET_KEY=uZersesh234
-MYSQL_PASSWORD=bItstudY12!
