@@ -15,8 +15,6 @@ from tensorflow.keras.models import load_model
 # Import Environment Variables
 load_dotenv()
 
-
-
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_HOST = os.getenv('MYSQL_HOST')
 MYSQL_USER = os.getenv('MYSQL_USER')
@@ -32,10 +30,11 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
 
 # Load the Emotion Recognition Model
-json_file = open("/Users/alvianaqvi/vsc_code/bitcamp-hack-alvia/Emotion-recognition/models/facial-emotion-recognition-higher-accuracy/facialemotionmodel.json", "r")
+#Get from github: https://github.com/AI-Gajendra/facial-emotion-recognition-higher-accuracy
+json_file = open(r"facial-emotion-recognition-higher-accuracy/facialemotionmodel.json", "r")
 model_json = json_file.read()
 json_file.close()
-emotion_model = load_model("/Users/alvianaqvi/vsc_code/bitcamp-hack-alvia/Emotion-recognition/models/facial-emotion-recognition-higher-accuracy/facialemotionmodel.h5")
+emotion_model = load_model("facial-emotion-recognition-higher-accuracy/facialemotionmodel.h5")
 
 # Emotion labels
 emotion_labels = {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'neutral', 5: 'sad', 6: 'surprise'}
