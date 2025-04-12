@@ -4,6 +4,8 @@ import torch
 import numpy as np
 from tensorflow.keras.models import load_model
 from dotenv import load_dotenv
+from gemini import generate_gemini_response
+import time
 
 load_dotenv()
 
@@ -34,8 +36,15 @@ def extract_features(image):
     feature = feature.reshape(1, 48, 48, 1)
     return feature / 255.0
 
+# Phone detection variables
+phone_detected_start = None
+phone_alert_sent = False
+phone_detection_threshold = 5  # seconds
+
 def generate_frames():
     cap = cv2.VideoCapture(0)
+
+    global phone_detected_start, phone_alert_sent
 
     while True:
         success, frame = cap.read()
@@ -45,14 +54,29 @@ def generate_frames():
         # Step 1: Run YOLO for phone detection
         results = model(frame)
         labels = results.names
+        phone_detected_this_frame = False
+
         for *xyxy, conf, cls in results.xyxy[0]:
             if conf > 0.5:
                 label = labels[int(cls)]
                 if label == 'cell phone':
+                    phone_detected_this_frame = True
                     x1, y1, x2, y2 = map(int, xyxy)
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     cv2.putText(frame, f'Cell Phone: {conf*100:.2f}%', (x1, y1 - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        # Handle timing logic
+        if phone_detected_this_frame:
+            if phone_detected_start is None:
+                phone_detected_start = time.time()
+            elif not phone_alert_sent and time.time() - phone_detected_start >= phone_detection_threshold:
+                print(generate_gemini_response("Send a message scolding the user for having a phone present."))
+                phone_alert_sent = True
+        else:
+            # Reset if phone not detected
+            phone_detected_start = None
+            phone_alert_sent = False
 
         # Step 2: Detect faces
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
