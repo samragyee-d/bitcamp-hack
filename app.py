@@ -2,8 +2,8 @@
 
 from flask import Flask, render_template, request, redirect, url_for, Response, flash
 import cv2
-from keras.models import load_model
-from keras.preprocessing.image import img_to_array
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
 
