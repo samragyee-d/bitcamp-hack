@@ -10,6 +10,10 @@
 </head>
 <body>
   <div class="wrapper">
+    {% extends 'navbar.html' %}
+    {% block header %}
+    <h1>{% block title %}Login{% endblock %}</h1>
+    {% endblock %}
     <div class="title"><span>Login Form</span></div>
     <form action="/login" method="POST">
       <div class="row">
