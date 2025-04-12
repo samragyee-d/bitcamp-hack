@@ -19,14 +19,6 @@ import os
 #Import Environment Variables
 load_dotenv()
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password=os.getenv('MYSQL_PASSWORD'),
-    database="flask_auth"
-)
-cursor = conn.cursor()
-
 # Load Haar Cascade + emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascades_models/haarcascade_frontalface_default.xml')
 emotion_model = load_model('emotion_detection_model_100epochs.h5')
@@ -77,21 +69,32 @@ def generate_frames():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-#Login routing
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user_input = request.form['username']
         password = request.form['password']
 
+        # Connect to MySQL only when needed
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password=os.getenv('MYSQL_PASSWORD'),
+            database="flask_auth"
+        )
+        cursor = conn.cursor()
         cursor.execute("SELECT password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
         result = cursor.fetchone()
+        cursor.close()
+        conn.close()
 
         if result and check_password_hash(result[0], password):
             return "Login successful!"
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
+
+    return render_template('Login.html')
 
 
 #Register User
@@ -113,9 +116,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')  # You'll need to create this HTML
-
-
-
 
 @app.route('/video')
 def vdeo():
