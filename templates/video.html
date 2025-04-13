@@ -1,9 +1,11 @@
+{% extends 'base.html' %}
 
+{% block title %}Home{% endblock %}
+
+{% block content %}
 <div class="container">
   <!-- Left: Webcam Recorder -->
   <div class="card">
-    <h1> {% block title %}Webcam Recorder{% endblock %}</h1>
-    {% block content %}
     <div id="timer">Recording Time: 0s</div>
     <video id="preview" autoplay muted></video>
     <video id="replay" controls style="display:none;"></video>
@@ -20,5 +22,5 @@
     <h2>ML Live Feed</h2>
     <img class="stream" src="{{ url_for('video_feed') }}" alt="Live Stream">
   </div>
-  {% endblock %}
 </div>
+{% endblock %}
