@@ -53,9 +53,9 @@ def home():
     return render_template('home.html')
 
 @app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('home'))
+def logout(): 
+    session.clear() 
+    return redirect(url_for('home', logout='true'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -117,7 +117,7 @@ def login():
         connection.close()
 
         if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
-            return redirect(url_for('home'))
+            return redirect(url_for('home', login = 'true'))
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))

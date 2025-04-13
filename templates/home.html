@@ -3,6 +3,14 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<script> 
+window.onload = function() { 
+    const urlParams = new URLSearchParams(window.location.search); 
+    if (urlParams.get('logout') === 'true') { alert("You have been logged out successfully.");  }
+    else if (urlParams.get('login') === 'true') { alert("You have been logged in successfully.");  }
+    }; 
+    </script>
+
     <h1>EvaStudy</h1>
     
     <div class="all">
