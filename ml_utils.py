@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from gemini import generate_gemini_response
 import time
 import requests
+from state import chat_history
 
 
 load_dotenv()
@@ -58,11 +59,12 @@ comforting_message_times = deque()
 comforting_message_limit = 1  # threshold
 comforting_message_window_minutes = 1  # x minutes
 break_alert_sent = False
+chat_history = []
 
 def generate_frames():
     cap = cv2.VideoCapture(0)
 
-    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent
+    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history
 
     while True:
         success, frame = cap.read()

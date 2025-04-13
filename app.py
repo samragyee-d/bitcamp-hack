@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from ml_utils import generate_frames
 import bcrypt
 import os
+from state import clear_chat_history
 
 #Import Environment Variables
 load_dotenv()
@@ -28,9 +29,6 @@ import torch
 
 app = Flask(__name__)
 
-# Load YOLOv5 model from torch hub
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-model.conf = 0.5  # confidence threshold
 '''
 pip install flask opencv-python torch torchvision
 git clone https://github.com/ultralytics/yolov5  # If using YOLOv5
@@ -120,6 +118,7 @@ def login():
 
 @app.route('/video')
 def video():
+    clear_chat_history()
     return render_template('video.html')  # HTML with <img src="/video_feed">
 
 @app.route('/backendvideo')
