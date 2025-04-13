@@ -219,9 +219,6 @@ def save_video():
     if 'user_id' not in session:
         return jsonify({'error': 'Not logged in'}), 401
 
-    if 'video_file' not in request.files:
-        return jsonify({'error': 'No video file provided'}), 400
-
     video_file = request.files['video_file']
     if video_file:
         try:
