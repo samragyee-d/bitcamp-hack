@@ -4,6 +4,59 @@
 
 {% block content %}
 <h1>StudyEva</h1>
-<h2>Meet Eva, your study support chatbot</h2>
-<img src ="static/imgs/studyeva.webp"/>
+<div class="eva-card">
+    <h2>Meet Eva, your study support chatbot</h2>
+    <img src="static/imgs/studyeva.png" alt="Eva" class="eva-avatar" />
+    <h2 class="eva-name">Eva</h2>
+    <div class="eva-role-line"></div>
+    <p class="eva-role">Study Companion</p>
+</div>
+  
+<style>
+    h1 {
+        margin-bottom: 20px;
+
+    }
+
+    .eva-card {
+        margin: auto;
+        text-align: center;
+        background-color: #f9f6f2;
+        padding: 30px 20px;
+        border-radius: 20px;
+        max-width: 380px;
+        max-height: 75vh;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .eva-avatar {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    }
+    
+    .eva-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 10px 0 5px;
+    color: #1a1a1a;
+    }
+
+    .eva-role-line {
+    width: 40px;
+    height: 4px;
+    background-color: #4a6cf7;
+    margin: 10px auto;
+    border-radius: 2px;
+    }
+
+    .eva-role {
+    font-size: 14px;
+    color: #444;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    }
+</style>
 {% endblock %}
