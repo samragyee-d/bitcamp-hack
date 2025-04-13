@@ -61,10 +61,17 @@ comforting_message_window_minutes = 1  # x minutes
 break_alert_sent = False
 chat_history = []
 
+# Cooldown state
+last_phone_message_time = time.time()
+last_emotion_message_time = time.time()
+
+phone_cooldown = 0.5     # seconds
+emotion_cooldown = 2  # seconds
+
 def generate_frames():
     cap = cv2.VideoCapture(0)
 
-    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history
+    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history, last_phone_message_time, last_emotion_message_time, phone_cooldown, emotion_cooldown
 
     while True:
         success, frame = cap.read()
@@ -91,9 +98,12 @@ def generate_frames():
             if phone_detected_start is None:
                 phone_detected_start = time.time()
             elif not phone_alert_sent and time.time() - phone_detected_start >= phone_detection_threshold:
-                response = generate_gemini_response("Send a message scolding the user for having a phone present.")
-                phone_alert_sent = True
-                requests.post("http://127.0.0.1:5000/push_system_message", json={"message": response})
+                if time.time() - last_phone_message_time > phone_cooldown:
+                    response = generate_gemini_response("Send a message scolding the user for having a phone present.")
+                    phone_alert_sent = True
+                    last_phone_message_time = time.time()
+                    requests.post("http://127.0.0.1:5000/push_system_message", json={"message": response})
+
         else:
             # Reset if phone not detected
             phone_detected_start = None
@@ -130,11 +140,13 @@ def generate_frames():
 
                 # Trigger response if threshold is exceeded
                 if negative_count >= 7:
-                    if not emotion_alert_sent:
+                    if not emotion_alert_sent and time.time() - last_emotion_message_time > emotion_cooldown:
                         message = generate_gemini_response("The user seems emotionally distressed. Please send a short comforting or encouraging message.")
                         requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                         emotion_alert_sent = True
+                        last_emotion_message_time = time.time()
                         comforting_message_times.append(datetime.now())
+
                 else:
                     emotion_alert_sent = False
 
