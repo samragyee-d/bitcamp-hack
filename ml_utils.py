@@ -6,12 +6,21 @@ from tensorflow.keras.models import load_model
 from dotenv import load_dotenv
 from gemini import generate_gemini_response
 import time
+from datetime import datetime
 import requests
 from state import chat_history, recording_flag
 
-
-
 load_dotenv()
+
+# Ensure the 'static' folder exists
+STATIC_FOLDER = 'static/'
+if not os.path.exists(STATIC_FOLDER):
+    os.makedirs(STATIC_FOLDER)
+
+# Path for saving the video file
+def get_video_path():
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    return os.path.join(STATIC_FOLDER, f"recording_{timestamp}.mp4")
 
 # Load Haar cascade for face detection
 face_cascade_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
@@ -190,7 +199,7 @@ def generate_frames():
         elif recorded_frames:  # Recording just stopped
             # Save sped-up video
             sped_up_fps = fps * 4  # 4x speed
-            video_path = "static/recorded.mp4"  # Save to static folder as MP4
+            video_path = get_video_path()
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4 codec
             video_writer = cv2.VideoWriter(video_path, fourcc, sped_up_fps, frame_size)
 

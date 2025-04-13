@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
 import requests
-
+from datetime import datetime
 
 
 #SQL setup
@@ -52,6 +52,11 @@ MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
 def home():
     return render_template('home.html')
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -83,7 +88,8 @@ def register():
             cursor.close()
             connection.close()
 
-            return render_template('registration.html', message='Registration successful!')
+            # Redirect to homepage with success flag
+            return redirect(url_for('home', registered='true'))
 
         except mysql.connector.Error as err:
             print(f"Error during insert: {err}")
@@ -111,7 +117,7 @@ def login():
         connection.close()
 
         if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
-            return "Login successful!"
+            return redirect(url_for('home'))
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
