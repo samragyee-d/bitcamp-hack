@@ -14,6 +14,10 @@
         padding: 20px;
     }
 
+    .video-container img {
+        border-radius: 20px;
+    }
+
     .chat-container {
         flex: 1;
         margin-top: 37px;
@@ -80,19 +84,6 @@
     <div class="video-container">
         <h1>Backend Video</h1>
         <img src="{{ url_for('video_feed') }}" width="720" />
-        <button onclick="startRecording()">Start Recording</button>
-        <button onclick="stopRecording()">Stop Recording</button>
-
-        <script>
-        function startRecording() {
-            fetch('/start_recording', { method: 'POST' });
-        }
-
-        function stopRecording() {
-            fetch('/stop_recording', { method: 'POST' });
-        }
-        </script>
-
     </div>
     <div class="chat-container">
         <h2>Chat with Eva</h2>

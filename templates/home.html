@@ -3,60 +3,124 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>StudyEva</h1>
-<div class="eva-card">
-    <h2>Meet Eva, your study support chatbot</h2>
-    <img src="static/imgs/studyeva.png" alt="Eva" class="eva-avatar" />
-    <h2 class="eva-name">Eva</h2>
-    <div class="eva-role-line"></div>
-    <p class="eva-role">Study Companion</p>
-</div>
-  
-<style>
-    h1 {
-        margin-bottom: 20px;
-
-    }
-
-    .eva-card {
-        margin: auto;
-        text-align: center;
-        background-color: #f9f6f2;
-        padding: 30px 20px;
-        border-radius: 20px;
-        max-width: 380px;
-        max-height: 75vh;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .eva-avatar {
-    width: 180px;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    }
+    <h1>EvaStudy</h1>
     
-    .eva-name {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 10px 0 5px;
-    color: #1a1a1a;
-    }
-
-    .eva-role-line {
-    width: 40px;
-    height: 4px;
-    background-color: #4a6cf7;
-    margin: 10px auto;
-    border-radius: 2px;
-    }
-
-    .eva-role {
-    font-size: 14px;
-    color: #444;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    }
-</style>
+    <div class="all">
+    
+        <div class="cards">
+            <div class="info-card">
+                <h2>Adaptive Study Methods</h2>
+                <img src="static/imgs/book.png" alt="Book">
+                <p class="eva-role">Eva doesn’t just remind you to take breaks — she knows when you need them. Using real-time microexpression 
+                    analysis, Eva can detect subtle signs of fatigue, frustration, or focus loss during your study sessions. She responds to YOU.</p>
+            </div>
+            <div class="info-card">
+                <h2>Educational and Mental Support</h2>
+                <img src="static/imgs/brain.png" alt="Brain">
+                <p class="eva-role">Eva is someone who listens. Powered by real-time sentiment analysis and microexpression recognition, Eva can 
+                    sense when something’s off. If you’re feeling anxious, burnt out, or just need someone to talk to, she’s here to respond</p>
+            </div>
+        </div>
+        
+        <div class="eva-card">
+            <h2>Meet Eva, your study support chatbot</h2>
+            <img src="static/imgs/studyeva.png" alt="Eva" class="eva-avatar">
+            <h2 class="eva-name">Eva</h2>
+            <div class="eva-role-line"></div>
+            <p class="eva-role">Study Companion</p>
+        </div>
+    
+        <div class="cards">
+            <div class="info-card">
+                <h2>Track your Progress</h2>
+                <img src="static/imgs/vid_logo.png" alt="Vid">
+                <p class="eva-role">Every session with Eva is recorded, allowing you to review how you focused, how you felt, and how far you’ve come. 
+                    Eva helps you connect the dots between your habits and your success.</p>
+            </div>
+            <div class="info-card">
+                <h2>Weekly Insights</h2>
+                <img src="static/imgs/reflect.png" alt="Reflect">
+                <p class="eva-role">Eva doesn't just track your study sessions — she turns them into personalized insights you can actually use. Every week, Eva sends you a 
+                    gentle recap of your study habits, focus patterns, and emotional trends, helping you reflect, reset, and stay aligned with your goals.</p>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        h1 {
+            margin-bottom: 20px;
+            background: -webkit-linear-gradient(#ADD8E6, #08283a);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 70px;
+        }
+    
+        .all {
+            display: flex;
+            flex-direction:row;
+            justify-content: space-evenly;
+        }
+        .eva-card {
+            margin: auto;
+            text-align: center;
+            background-color: #f9f6f2;
+            padding: 30px 20px;
+            border-radius: 20px;
+            max-width: 380px;
+            max-height: 75vh;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+    
+        .cards {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            max-height:75vh;
+        }
+    
+        .cards img{
+            width: 90px;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+    
+        .info-card {
+            text-align: center;
+            color: gray;
+            background-color: #add8e65e;
+            padding: 30px 20px;
+            border-radius: 20px;
+            margin: 15px 10px;
+            max-width: 35vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+    
+        .eva-avatar {
+            width: 240px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        
+        .eva-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0 5px;
+            color: #1a1a1a;
+        }
+    
+        .eva-role-line {
+            width: 40px;
+            height: 4px;
+            background-color: #08283a;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+    
+        .eva-role {
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+        }
+    </style>
 {% endblock %}
