@@ -14,17 +14,21 @@ from dotenv import load_dotenv
 from ml_utils import generate_frames
 import bcrypt
 import os
+from state import clear_chat_history
 
 #Import Environment Variables
 load_dotenv()
+
+from queue import Queue
+
+system_message_queue = Queue()
 
 app = Flask(__name__)
 import cv2
 import torch
 
-# Load YOLOv5 model from torch hub
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-model.conf = 0.5  # confidence threshold
+app = Flask(__name__)
+
 '''
 pip install flask opencv-python torch torchvision
 git clone https://github.com/ultralytics/yolov5  # If using YOLOv5
@@ -40,6 +44,10 @@ MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_HOST = os.getenv('MYSQL_HOST')
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
+@app.route('/')
+def home():
+    return render_template('home.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -110,7 +118,8 @@ def login():
 
 @app.route('/video')
 def video():
-    return render_template('combined_page.html')  # HTML with <img src="/video_feed">
+    clear_chat_history()
+    return render_template('video.html')  # HTML with <img src="/video_feed">
 
 @app.route('/backendvideo')
 def backendvideo():
@@ -118,7 +127,38 @@ def backendvideo():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+from gemini import generate_gemini_response
+from flask import jsonify
+
+@app.route('/gemini_chat', methods=['POST'])
+def gemini_chat():
+    data = request.get_json()
+    message = data.get('message', '')
+    if not message:
+        return jsonify({'response': 'No message provided.'})
+    
+    response = generate_gemini_response(message)
+    return jsonify({'response': response})
+
+@app.route('/system_chat', methods=['GET'])
+def system_chat():
+    if not system_message_queue.empty():
+        message = system_message_queue.get()
+        return jsonify({'response': message})
+    else:
+        return jsonify({'response': None})
+
+@app.route('/push_system_message', methods=['POST'])
+def push_system_message():
+    data = request.get_json()
+    message = data.get('message', '')
+    if message:
+        system_message_queue.put(message)
+    return jsonify({'status': 'success'})
+
 
 # BASIC FLASK
 @app.route('/pagename')
@@ -135,8 +175,6 @@ def submit():
     # You can process or store the data here
     return render_template('result.html', name=name, email=email)
 '''
-
-#alvia naqvi
 
 if __name__ == '__main__':
     app.run(debug=True)

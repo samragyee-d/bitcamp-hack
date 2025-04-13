@@ -1,10 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Backend Video</title>
+    <title>Backend Video with Chat</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .video-container {
+            flex: 2;
+            padding: 20px;
+        }
+        .chat-container {
+            flex: 1;
+            border-left: 1px solid #ccc;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #chat-input {
+            display: flex;
+        }
+        #chat-input input {
+            flex: 1;
+            padding: 8px;
+        }
+        #chat-input button {
+            padding: 8px 12px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Backend Video</h1>
-    <img src="{{ url_for('video_feed') }}" width="720" />
+    <div class="video-container">
+        <h1>Backend Video</h1>
+        <img src="{{ url_for('video_feed') }}" width="720" />
+    </div>
+    <div class="chat-container">
+        <h2>Gemini Chat</h2>
+        <div id="chat-box"></div>
+        <form id="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message..." required />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatInputForm = document.getElementById('chat-input');
+        const userInput = document.getElementById('user-input');
+
+        chatInputForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            // Show user message
+            const userMessage = document.createElement('div');
+            userMessage.textContent = 'You: ' + message;
+            chatBox.appendChild(userMessage);
+
+            // Clear input
+            userInput.value = '';
+
+            // Call backend to get Gemini response
+            const response = await fetch('/gemini_chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            const botMessage = document.createElement('div');
+            botMessage.textContent = 'Gemini: ' + data.response;
+            chatBox.appendChild(botMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        setInterval(async () => {
+            const response = await fetch('/system_chat');
+            const data = await response.json();
+            if (data.response) {
+                const botMessage = document.createElement('div');
+                botMessage.textContent = 'Gemini: ' + data.response;
+                chatBox.appendChild(botMessage);
+                chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        }, 200); // every 2 seconds
+    </script>
 </body>
 </html>
