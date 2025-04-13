@@ -2,26 +2,43 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 <style>
-body {
-  padding: 0px;
+* {
   margin: 0;
-  height: 100vh;
-  background-image: url('/static/imgs/bg-studyeva.jpg');
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Quicksand", sans-serif;
+  letter-spacing: 1.35px;
+}
+
+body {
+  margin: 0;
+  background-image: url('static/imgs/bg_studyeva.jpg');
+  background-color: rgba(255,255,255,0.2);
+  background-blend-mode: lighten;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
+  height: 100vh;
+}
+
+h1 {
+  padding-top: 10px;
+  display: flex;
+  justify-content: center;
 }
 
 .topnav {
   overflow: hidden;
-  background-color: #333;
+  background-color: rgba(255,255,255,0.5);
 }
 
 .topnav a {
   float: left;
-  color: #f2f2f2;
+  color: rgba(0,0,0,0.8);
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -34,7 +51,7 @@ body {
 }
 
 .topnav a.active {
-  background-color: #04AA6D;
+  background-color: #ADD8E6;
   color: white;
 }
 </style>
@@ -43,12 +60,11 @@ body {
 
 <div class="topnav">
   <a class="active" href="{{ url_for('home') }}">Home</a>
-  <a href="{{ url_for('video') }}">Record</a>
+  <a href="{{ url_for('backendvideo') }}">Record</a>
   <a href="{{ url_for('pagename') }}">Past Recordings</a>
   <a href="{{ url_for('register') }}">Sign Up</a>
   <a href="{{ url_for('login') }}">Log In</a>
-  <a href="{{ url_for('pagename') }}">Log Out</a>
-  <a href="{{ url_for('backendvideo') }}">Behind the Scenes</a>
+  <a href="{{ url_for('logout') }}">Log Out</a>
 </div>
 
 {% block content %}{% endblock %}

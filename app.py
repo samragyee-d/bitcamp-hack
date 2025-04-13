@@ -6,6 +6,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
+import requests
+from datetime import datetime
 
 
 #SQL setup
@@ -14,7 +16,8 @@ from dotenv import load_dotenv
 from ml_utils import generate_frames
 import bcrypt
 import os
-from state import clear_chat_history
+from state import clear_chat_history, recording_flag
+
 
 #Import Environment Variables
 load_dotenv()
@@ -49,6 +52,11 @@ MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
 def home():
     return render_template('home.html')
 
+@app.route('/logout')
+def logout(): 
+    session.clear() 
+    return redirect(url_for('home', logout='true'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -80,7 +88,8 @@ def register():
             cursor.close()
             connection.close()
 
-            return render_template('registration.html', message='Registration successful!')
+            # Redirect to homepage with success flag
+            return redirect(url_for('home', registered='true'))
 
         except mysql.connector.Error as err:
             print(f"Error during insert: {err}")
@@ -108,7 +117,7 @@ def login():
         connection.close()
 
         if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
-            return "Login successful!"
+            return redirect(url_for('home', login = 'true'))
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
@@ -131,7 +140,12 @@ def combined():
 
 @app.route('/backendvideo')
 def backendvideo():
-    return render_template('backendvideo.html')  # HTML with <img src="/video_feed">
+    global recording
+    # --- Send welcome message on startup ---
+    welcome_message = generate_gemini_response("Welcome the user to their study session with a friendly and motivating tone.")
+    requests.post("http://127.0.0.1:5000/push_system_message", json={"message": welcome_message})
+    return render_template('backendvideo.html', is_recording=recording_flag["status"])
+
 
 @app.route('/video_feed')
 def video_feed():
@@ -167,6 +181,26 @@ def push_system_message():
         system_message_queue.put(message)
     return jsonify({'status': 'success'})
 
+
+from flask import session
+
+@app.route('/start_recording', methods=['POST'])
+def start_recording():
+    recording_flag["status"] = True
+    return "Recording started"
+
+@app.route('/stop_recording', methods=['POST'])
+def stop_recording():
+    recording_flag["status"] = False
+    return "Recording stopped"
+
+@app.route('/download')
+def download_video():
+    return redirect(url_for('static', filename='recorded.mp4'))
+
+@app.route('/recording_status')
+def recording_status():
+    return jsonify({"status": recording_flag["status"]})
 
 # BASIC FLASK
 @app.route('/pagename')

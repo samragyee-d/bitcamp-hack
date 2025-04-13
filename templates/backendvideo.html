@@ -12,20 +12,57 @@
     .video-container {
         flex: 2;
         padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    .video-container img {
+        border-radius: 20px;
     }
 
     .chat-container {
         flex: 1;
+        margin-top: 37px;
         border-left: 1px solid #ccc;
         padding: 20px;
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 85vh;
         box-sizing: border-box;
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .chat-message {
+        padding: 10px 15px;
+        margin: 8px 0;
+        border-radius: 15px;
+        line-height: 1.4;
+        word-wrap: break-word;
+        font-size: 14px;
+        display: block;
+        width: fit-content;
+    }
+
+    .chat-message.user {
+        background-color: rgb(173, 216, 230);
+        align-self: flex-end;
+        text-align: right;
+        border-bottom-right-radius: 0;
+    }
+
+    .chat-message.bot {
+        background-color: #c2dbe8bc;
+        align-self: flex-start;
+        text-align: left;
+        border-bottom-left-radius: 0;
     }
 
     #chat-box {
         flex: 1;
+        display: flex;
+        flex-direction: column;
         overflow-y: auto;
         border: 1px solid #ccc;
         padding: 10px;
@@ -44,15 +81,37 @@
     #chat-input button {
         padding: 8px 12px;
     }
+
+    .recording-btn {
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .recording-btn:hover {
+        transform: scale(1.05);
+        background-color: #0056b3;
+    }
 </style>
 
 <div class="main-content">
     <div class="video-container">
-        <h1>Backend Video</h1>
+        <h1>Learn & Log</h1>
         <img src="{{ url_for('video_feed') }}" width="720" />
+
+        <div id="recording-controls">
+            <!-- Button is dynamically rendered here -->
+        </div>
     </div>
+
     <div class="chat-container">
-        <h2>Gemini Chat</h2>
+        <h2>Chat with Eva</h2>
         <div id="chat-box"></div>
         <form id="chat-input">
             <input type="text" id="user-input" placeholder="Type a message..." required />
@@ -61,10 +120,14 @@
     </div>
 </div>
 
+<!-- 🔊 Audio notification sound -->
+<audio id="notification-sound" src="{{ url_for('static', filename='ping.mp3') }}"></audio>
+
 <script>
     const chatBox = document.getElementById('chat-box');
     const chatInputForm = document.getElementById('chat-input');
     const userInput = document.getElementById('user-input');
+    const notificationSound = document.getElementById('notification-sound');
 
     chatInputForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -73,6 +136,7 @@
 
         const userMessage = document.createElement('div');
         userMessage.textContent = 'You: ' + message;
+        userMessage.className = 'chat-message user';
         chatBox.appendChild(userMessage);
 
         userInput.value = '';
@@ -85,9 +149,12 @@
 
         const data = await response.json();
         const botMessage = document.createElement('div');
-        botMessage.textContent = 'Gemini: ' + data.response;
+        botMessage.textContent = 'Eva: ' + data.response;
+        botMessage.className = 'chat-message bot';
         chatBox.appendChild(botMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        notificationSound.play();
     });
 
     setInterval(async () => {
@@ -95,10 +162,38 @@
         const data = await response.json();
         if (data.response) {
             const botMessage = document.createElement('div');
-            botMessage.textContent = 'Gemini: ' + data.response;
+            botMessage.textContent = 'Eva: ' + data.response;
+            botMessage.className = 'chat-message bot';
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            notificationSound.play();
         }
     }, 2000);
+
+    async function fetchRecordingStatus() {
+        const response = await fetch('/recording_status');
+        const data = await response.json();
+        return data.status;
+    }
+
+    async function updateRecordingButton() {
+        const isRecording = await fetchRecordingStatus();
+        const controlsDiv = document.getElementById('recording-controls');
+        controlsDiv.innerHTML = '';
+
+        const btn = document.createElement('button');
+        btn.className = 'recording-btn';
+        btn.textContent = isRecording ? 'Stop Recording' : 'Start Recording';
+        btn.onclick = async () => {
+            await fetch(isRecording ? '/stop_recording' : '/start_recording', { method: 'POST' });
+            updateRecordingButton();
+        };
+
+        controlsDiv.appendChild(btn);
+    }
+
+    updateRecordingButton();
+    setInterval(updateRecordingButton, 5000);
 </script>
 {% endblock %}

@@ -23,9 +23,42 @@
         <input type="password" name="password" placeholder="Password" required />
       </div>
       <div class="row button">
-        <input type="submit" value="Login" />
+        <input type="submit" value="Log In" />
       </div>
-      <div class="signup-link">Not a member? <a href="/registration">Sign up now</a></div>
+      <div class="signup-link">Not a member? <a href="/register">Sign up now</a></div>
     </form>
   </div>
+
+  <style>
+
+
+    .title {
+      margin-bottom: 20px;
+      background: -webkit-linear-gradient(#ADD8E6, #08283a);
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 70px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    form {
+      margin: auto;
+      text-align: center;
+      background-color: #f9f6f2;
+      padding: 30px 20px;
+      border-radius: 20px;
+      max-width: 600px;
+      max-height: 75vh;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      font-size: 23px;
+    }
+
+    input {
+      font-size: 18px;
+      margin: 15px 0px;
+      min-width: 500px;
+    }
+
+  </style>
 {% endblock %}
