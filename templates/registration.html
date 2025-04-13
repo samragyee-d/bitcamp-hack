@@ -1,15 +1,7 @@
 <!-- templates/registration.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-</head>
-<body>
+{% extends "navbar.html" %}
+{% block title %}Sign Up{% endblock%}
+{% block content %}
   <div class="wrapper">
     <div class="title"><span>Registration Form</span></div>
     <form method="POST" action="{{ url_for('register') }}">
@@ -31,5 +23,5 @@
       <div class="signup-link">Already a member? <a href="/login">Login here</a></div>
     </form>
   </div>
-</body>
-</html>
+{% endblock %}
+{% endblock %}

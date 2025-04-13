@@ -1,14 +1,12 @@
 {% extends 'navbar.html' %}
-
-{% block title %}Webcam Recorder{% endblock %}
-
-{% block content %}
-<h1>Webcam Recorder</h1>
-<link rel="stylesheet" type="text/css" href="/static/css/video.css">
 <div class="container">
+  {% block content %}
   <!-- Left: Webcam Recorder -->
   <div class="card">
-    <h2>Webcam Recorder</h2>
+    {% block header %}
+    <h1> {% block title %}Webcam Recorder{% endblock %}</h1>
+    {% endblock %}
+    {% block content %}
     <div id="timer">Recording Time: 0s</div>
     <video id="preview" autoplay muted></video>
     <video id="replay" controls style="display:none;"></video>
