@@ -124,7 +124,9 @@ def video():
 
 @app.route('/backendvideo')
 def backendvideo():
-    return render_template('backendvideo.html')  # HTML with <img src="/video_feed">
+    global recording
+    return render_template('backendvideo.html', is_recording=recording_flag["status"])
+
 
 @app.route('/video_feed')
 def video_feed():
@@ -176,6 +178,10 @@ def stop_recording():
 @app.route('/download')
 def download_video():
     return redirect(url_for('static', filename='recorded.mp4'))
+
+@app.route('/recording_status')
+def recording_status():
+    return jsonify({"status": recording_flag["status"]})
 
 # BASIC FLASK
 @app.route('/pagename')
