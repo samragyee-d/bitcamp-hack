@@ -12,7 +12,10 @@ body {
   justify-content: center;
   height: 100vh;
   padding: 15px;
-  background: #1abc9c;
+  background-image: url('/static/imgs/bg-studyeva.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
 }
 .wrapper {
