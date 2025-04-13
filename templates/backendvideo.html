@@ -16,12 +16,42 @@
 
     .chat-container {
         flex: 1;
+        margin-top: 37px;
         border-left: 1px solid #ccc;
         padding: 20px;
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 85vh;
         box-sizing: border-box;
+    }
+
+    /* Chat message styling */
+    .chat-message {
+        /* max-width: 70%; */
+        padding: 10px 15px;
+        margin: 8px 0;
+        border-radius: 15px;
+        line-height: 1.4;
+        /* display: inline-block; */
+        clear: both;
+        word-wrap: break-word;
+        font-size: 14px;
+        display: block; 
+        width: fit-content; 
+    }
+
+    .chat-message.user {
+        background-color: rgba(173, 216, 230, 0.7); /* WhatsApp green */
+        align-self: flex-end;
+        text-align: right;
+        border-bottom-right-radius: 0;
+    }
+
+    .chat-message.bot {
+        background-color: #faf8f8bc;
+        align-self: flex-start;
+        text-align: left;
+        border-bottom-left-radius: 0;
     }
 
     #chat-box {
@@ -52,7 +82,7 @@
         <img src="{{ url_for('video_feed') }}" width="720" />
     </div>
     <div class="chat-container">
-        <h2>Gemini Chat</h2>
+        <h2>Chat with Eva</h2>
         <div id="chat-box"></div>
         <form id="chat-input">
             <input type="text" id="user-input" placeholder="Type a message..." required />
@@ -73,6 +103,7 @@
 
         const userMessage = document.createElement('div');
         userMessage.textContent = 'You: ' + message;
+        userMessage.className = 'chat-message user';
         chatBox.appendChild(userMessage);
 
         userInput.value = '';
@@ -85,7 +116,8 @@
 
         const data = await response.json();
         const botMessage = document.createElement('div');
-        botMessage.textContent = 'Gemini: ' + data.response;
+        botMessage.textContent = 'Eva: ' + data.response;
+        botMessage.className = 'chat-message bot';
         chatBox.appendChild(botMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
@@ -95,7 +127,8 @@
         const data = await response.json();
         if (data.response) {
             const botMessage = document.createElement('div');
-            botMessage.textContent = 'Gemini: ' + data.response;
+            botMessage.textContent = 'Eva: ' + data.response;
+            botMessage.className = 'chat-message bot';
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
