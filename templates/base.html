@@ -5,15 +5,29 @@
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
 body {
   padding: 0px;
   margin: 0;
   height: 100vh;
-  background-image: url('/static/imgs/bg-studyeva.jpg');
+  background-image: url('static/imgs/bg_studyeva.jpg');
+  background-color: rgba(255,255,255,0.2);
+  background-blend-mode: lighten;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
+}
+
+h1 {
+  display: flex;
+  justify-content: center;
 }
 
 .topnav {
