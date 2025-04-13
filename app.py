@@ -22,8 +22,6 @@ app = Flask(__name__)
 import cv2
 import torch
 
-app = Flask(__name__)
-
 # Load YOLOv5 model from torch hub
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5  # confidence threshold
@@ -112,7 +110,7 @@ def login():
 
 @app.route('/video')
 def video():
-    return render_template('video.html')  # HTML with <img src="/video_feed">
+    return render_template('combined_page.html')  # HTML with <img src="/video_feed">
 
 @app.route('/backendvideo')
 def backendvideo():
@@ -120,8 +118,7 @@ def backendvideo():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # BASIC FLASK
 @app.route('/pagename')
