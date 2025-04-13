@@ -3,7 +3,7 @@
 {% block title %}Sign Up{% endblock%}
 {% block content %}
   <div class="wrapper">
-    <div class="title"><span>Registration Form</span></div>
+    <div class="title"><span>Sign Up</span></div>
     <form method="POST" action="{{ url_for('register') }}">
       <div class="row">
         <i class="fas fa-user"></i>
@@ -23,4 +23,31 @@
       <div class="signup-link">Already a member? <a href="/login">Login here</a></div>
     </form>
   </div>
+  <style>
+
+    .title {
+      font-size: 50px;
+      margin-top: 20px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    form {
+      margin: auto;
+      text-align: center;
+      background-color: #f9f6f2;
+      padding: 30px 20px;
+      border-radius: 20px;
+      max-width: 600px;
+      max-height: 75vh;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      font-size: 25px;
+    }
+
+    input {
+      font-size: 30px;
+      margin: 15px 0px;
+    }
+
+  </style>
 {% endblock %}
