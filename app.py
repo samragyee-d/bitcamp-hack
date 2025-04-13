@@ -121,6 +121,14 @@ def video():
     clear_chat_history()
     return render_template('video.html')  # HTML with <img src="/video_feed">
 
+@app.route('/recording')
+def recording():
+    return render_template('recording.html')  # HTML with <img src="/video_feed">
+
+@app.route('/combined')
+def combined():
+    return render_template('combined.html')  # HTML with <img src="/video_feed">
+
 @app.route('/backendvideo')
 def backendvideo():
     return render_template('backendvideo.html')  # HTML with <img src="/video_feed">
@@ -164,6 +172,11 @@ def push_system_message():
 @app.route('/pagename')
 def pagename():
     return render_template('pagename.html')
+
+@app.route('/logout')
+def logout():
+    return render_template('logout.html')
+
 
 '''
 @app.route('/submit', methods=['POST'])
