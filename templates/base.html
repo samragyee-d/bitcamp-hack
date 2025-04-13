@@ -60,12 +60,11 @@ h1 {
 
 <div class="topnav">
   <a class="active" href="{{ url_for('home') }}">Home</a>
-  <a href="{{ url_for('video') }}">Record</a>
+  <a href="{{ url_for('backendvideo') }}">Record</a>
   <a href="{{ url_for('pagename') }}">Past Recordings</a>
   <a href="{{ url_for('register') }}">Sign Up</a>
   <a href="{{ url_for('login') }}">Log In</a>
   <a href="{{ url_for('pagename') }}">Log Out</a>
-  <a href="{{ url_for('backendvideo') }}">Behind the Scenes</a>
 </div>
 
 {% block content %}{% endblock %}
