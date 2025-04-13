@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ML Camera with Recording Overlay</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+    }
+
+    .video-container {
+      position: relative;
+      flex: 2;
+      padding: 20px;
+    }
+
+    .video-feed {
+      width: 100%;
+      max-width: 720px;
+      border: 2px solid #444;
+    }
+
+    .controls-overlay {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .controls-overlay button {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 1rem;
+    }
+
+    .chat-container {
+      flex: 1;
+      border-left: 1px solid #ccc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    #chat-input {
+      display: flex;
+    }
+
+    #chat-input input {
+      flex: 1;
+      padding: 8px;
+    }
+
+    #chat-input button {
+      padding: 8px 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <h1>ML Camera Feed</h1>
+    <img src="{{ url_for('video_feed') }}" class="video-feed" />
+
+    <!-- Overlayed Controls -->
+    <div class="controls-overlay">
+      <button id="start">Start Recording</button>
+      <button id="stop" disabled>Stop Recording</button>
+      <button id="download" disabled>Download</button>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <h2>Gemini Chat</h2>
+    <div id="chat-box"></div>
+    <form id="chat-input">
+      <input type="text" id="user-input" placeholder="Type a message..." required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const chatInputForm = document.getElementById('chat-input');
+    const userInput = document.getElementById('user-input');
+
+    chatInputForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (message === '') return;
+
+      const userMessage = document.createElement('div');
+      userMessage.textContent = 'You: ' + message;
+      chatBox.appendChild(userMessage);
+      userInput.value = '';
+
+      const response = await fetch('/gemini_chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await response.json();
+      const botMessage = document.createElement('div');
+      botMessage.textContent = 'Gemini: ' + data.response;
+      chatBox.appendChild(botMessage);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    setInterval(async () => {
+      const response = await fetch('/system_chat');
+      const data = await response.json();
+      if (data.response) {
+        const botMessage = document.createElement('div');
+        botMessage.textContent = 'Gemini: ' + data.response;
+        chatBox.appendChild(botMessage);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    }, 200);
+
+    // Recording script
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function initCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      return stream;
+    }
+
+    initCamera().then(stream => {
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const downloadBtn = document.getElementById('download');
+        downloadBtn.href = url;
+        downloadBtn.download = 'recording.webm';
+        downloadBtn.disabled = false;
+      };
+
+      document.getElementById('start').onclick = () => {
+        recordedChunks = [];
+        mediaRecorder.start();
+        document.getElementById('start').disabled = true;
+        document.getElementById('stop').disabled = false;
+        document.getElementById('download').disabled = true;
+      };
+
+      document.getElementById('stop').onclick = () => {
+        mediaRecorder.stop();
+        document.getElementById('start').disabled = false;
+        document.getElementById('stop').disabled = true;
+      };
+    });
+  </script>
+</body>
+</html>

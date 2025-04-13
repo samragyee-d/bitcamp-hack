@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webcam Recorder</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 40px;
+    }
+    video {
+      width: 480px;
+      height: 360px;
+      border: 2px solid #444;
+      margin-bottom: 10px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Webcam Recorder</h1>
+  <video id="preview" autoplay muted></video><br>
+  <button id="start">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+  <button id="download" disabled>Download</button>
+  <br>
+  <video id="recording" controls></video>
+
+  <script>
+    const preview = document.getElementById('preview');
+    const recording = document.getElementById('recording');
+    const startBtn = document.getElementById('start');
+    const stopBtn = document.getElementById('stop');
+    const downloadBtn = document.getElementById('download');
+
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function initCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      preview.srcObject = stream;
+      return stream;
+    }
+
+    initCamera().then(stream => {
+      startBtn.onclick = () => {
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          recording.src = url;
+          downloadBtn.href = url;
+          downloadBtn.download = 'recording.webm';
+          downloadBtn.disabled = false;
+        };
+
+        mediaRecorder.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        downloadBtn.disabled = true;
+      };
+
+      stopBtn.onclick = () => {
+        mediaRecorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      };
+    });
+  </script>
+
+</body>
+</html>
