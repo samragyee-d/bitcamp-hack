@@ -12,6 +12,10 @@
     .video-container {
         flex: 2;
         padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
     }
 
     .video-container img {
@@ -89,15 +93,10 @@
         margin-top: 10px;
         transition: background-color 0.3s ease;
     }
+
     .recording-btn:hover {
-        transform: scale(1.05); /* Makes it bigger on hover */
+        transform: scale(1.05);
         background-color: #0056b3;
-    }
-    .video-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
-        align-items: center;
     }
 </style>
 
@@ -121,11 +120,14 @@
     </div>
 </div>
 
+<!-- 🔊 Audio notification sound -->
+<audio id="notification-sound" src="{{ url_for('static', filename='ping.mp3') }}"></audio>
+
 <script>
-    // CHAT SYSTEM
     const chatBox = document.getElementById('chat-box');
     const chatInputForm = document.getElementById('chat-input');
     const userInput = document.getElementById('user-input');
+    const notificationSound = document.getElementById('notification-sound');
 
     chatInputForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -151,6 +153,8 @@
         botMessage.className = 'chat-message bot';
         chatBox.appendChild(botMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        notificationSound.play();
     });
 
     setInterval(async () => {
@@ -162,10 +166,11 @@
             botMessage.className = 'chat-message bot';
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            notificationSound.play();
         }
     }, 2000);
 
-    // RECORDING BUTTON SYSTEM
     async function fetchRecordingStatus() {
         const response = await fetch('/recording_status');
         const data = await response.json();
@@ -182,7 +187,7 @@
         btn.textContent = isRecording ? 'Stop Recording' : 'Start Recording';
         btn.onclick = async () => {
             await fetch(isRecording ? '/stop_recording' : '/start_recording', { method: 'POST' });
-            updateRecordingButton();  // Re-render after click
+            updateRecordingButton();
         };
 
         controlsDiv.appendChild(btn);
