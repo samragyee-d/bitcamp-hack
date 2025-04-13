@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}My Videos{% endblock %}
+
+{% block content %}
+<h1>My Recorded Videos</h1>
+
+{% if videos %}
+    <ul>
+        {% for video in videos %}
+            <li>
+                <video width="320" height="240" controls>
+                    <source src="{{ url_for('video_feed_function', video_id=video['id']) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>Recorded on: {{ video['created_at'] }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No videos found.</p>
+{% endif %}
+{% endblock %}

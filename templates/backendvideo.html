@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}Backend Video with Chat{% endblock %}
+
 {% block content %}
 <style>
     .main-content {
@@ -104,6 +105,7 @@
     <div class="video-container">
         <h1>Learn & Log</h1>
         <img src="{{ url_for('video_feed') }}" width="720" />
+        <button type="submit" class="recording-btn" id="save-video">Save Session</button>
 
         <div id="recording-controls">
             <!-- Button is dynamically rendered here -->
@@ -195,5 +197,36 @@
 
     updateRecordingButton();
     setInterval(updateRecordingButton, 5000);
+
+    document.getElementById('save-video').addEventListener('click', async () => {
+        const videoFile = await getRecordedVideo();  // Assuming this function returns the video Blob or File
+
+        if (!videoFile) {
+            alert('No video file recorded');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', videoFile);  // Append the video file to FormData
+
+        const response = await fetch('/save_video', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.message) {
+            alert(data.message);
+        } else if (data.error) {
+            alert('Error: ' + data.error);
+        }
+    });
+
+    // Dummy function to simulate getting the recorded video file
+    async function getRecordedVideo() {
+        // Simulate recording video (this should be replaced by actual recording logic)
+        return new Blob(["dummy video data"], { type: 'video/mp4' });
+    }
 </script>
 {% endblock %}

@@ -9,13 +9,46 @@ import time
 from datetime import datetime
 import requests
 from state import chat_history, recording_flag
+import mysql.connector
+from collections import deque
 
 load_dotenv()
+
+# Database configuration
+DB_CONFIG = {
+    'host': os.getenv('MYSQL_HOST'),
+    'user': os.getenv('MYSQL_USER'),
+    'password': os.getenv('MYSQL_PASSWORD'),
+    'database': os.getenv('MYSQL_DATABASE')
+}
 
 # Ensure the 'static' folder exists
 STATIC_FOLDER = 'static/'
 if not os.path.exists(STATIC_FOLDER):
     os.makedirs(STATIC_FOLDER)
+
+def get_db_connection():
+    """Create and return a new database connection"""
+    return mysql.connector.connect(**DB_CONFIG)
+
+def save_video_to_db(user_id, video_path):
+    """Save video metadata to database"""
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO user_videos (user_id, video_path) VALUES (%s, %s)",
+            (user_id, os.path.basename(video_path))  # Store only filename
+        )
+        connection.commit()
+        return True
+    except mysql.connector.Error as err:
+        print(f"Database error: {err}")
+        return False
+    finally:
+        if 'connection' in locals() and connection.is_connected():
+            cursor.close()
+            connection.close()
 
 # Path for saving the video file
 def get_video_path():
@@ -33,11 +66,8 @@ emotion_labels = {
 }
 
 # Load emotion model
-# FOR ALVIA THE ROUTE IS bitcamp-hack/models/facialemotionmodel.h5
-# FOR EVERYONE ELSE IT IS models/facialemotionmodel.h5
-emotion_model = load_model(
-    "models/facialemotionmodel.h5"
-)
+emotion_model = load_model("models/facialemotionmodel.h5")
+
 # Load YOLOv5 model (nano version for performance)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 model.conf = 0.5
@@ -55,41 +85,34 @@ phone_detected_start = None
 phone_alert_sent = False
 phone_detection_threshold = 1  # seconds
 
-from collections import deque
-
 # Track recent emotions (rolling window)
-emotion_history = deque(maxlen=20)  # adjust size as needed
+emotion_history = deque(maxlen=20)
 negative_emotions = {'angry', 'disgust', 'fear'}
 emotion_alert_sent = False
 
-from datetime import datetime, timedelta
-
 # Track timestamps of comforting messages
 comforting_message_times = deque()
-comforting_message_limit = 1  # threshold
-comforting_message_window_minutes = 1  # x minutes
+comforting_message_limit = 1
+comforting_message_window_minutes = 1
 break_alert_sent = False
-chat_history = []
 
 # Cooldown state
 last_phone_message_time = time.time()
 last_emotion_message_time = time.time()
-
 phone_cooldown = 1     # seconds
 emotion_cooldown = 2  # seconds
 
-from datetime import datetime
-import cv2
-
 video_writer = None
 recorded_frames = []
-video_path = "static/recorded.mp4"
 frame_size = (640, 480)
 fps = 20  # Normal capture rate
 
 def generate_frames():
     global video_writer, recorded_frames
-
+    
+    # Get user_id from recording_flag (passed from Flask)
+    user_id = recording_flag.get("user_id")
+    
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_size[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_size[1])
@@ -99,25 +122,23 @@ def generate_frames():
         if not success:
             break
 
-        global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history, last_phone_message_time, last_emotion_message_time, phone_cooldown, emotion_cooldown
+        global phone_detected_start, phone_alert_sent, emotion_history, emotion_alert_sent
+        global comforting_message_times, break_alert_sent, last_phone_message_time, last_emotion_message_time
 
-
-        # Step 1: Run YOLO for phone detection
+        # Phone detection logic
         results = model(frame)
         labels = results.names
         phone_detected_this_frame = False
 
         for *xyxy, conf, cls in results.xyxy[0]:
-            if conf > 0.5:
-                label = labels[int(cls)]
-                if label == 'cell phone':
-                    phone_detected_this_frame = True
-                    x1, y1, x2, y2 = map(int, xyxy)
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    cv2.putText(frame, f'Cell Phone: {conf*100:.2f}%', (x1, y1 - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            if conf > 0.5 and labels[int(cls)] == 'cell phone':
+                phone_detected_this_frame = True
+                x1, y1, x2, y2 = map(int, xyxy)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f'Cell Phone: {conf*100:.2f}%', (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-        # Handle timing logic
+        # Phone timing logic
         if phone_detected_this_frame:
             if phone_detected_start is None:
                 phone_detected_start = time.time()
@@ -127,22 +148,14 @@ def generate_frames():
                     phone_alert_sent = True
                     last_phone_message_time = time.time()
                     requests.post("http://127.0.0.1:5000/push_system_message", json={"message": response})
-
         else:
-            # Reset if phone not detected
             phone_detected_start = None
             phone_alert_sent = False
 
-        # Step 2: Detect faces
+        # Face and emotion detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray,
-                                                scaleFactor=1.1,     # Reduce this slightly for stricter scale
-                                                minNeighbors=6,      # Increase this for stricter grouping
-                                                minSize=(60, 60)     # Set a minimum face size
-                                            )
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=6, minSize=(60, 60))
 
-
-        # Step 3: If faces exist, run emotion detection
         if len(faces) > 0:
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
@@ -150,64 +163,60 @@ def generate_frames():
                 face_resized = cv2.resize(face, (48, 48))
                 img = extract_features(face_resized)
                 pred = emotion_model.predict(img, verbose=0)
-                # Penalize 'sad' slightly
                 adjusted_pred = pred[0]
-                adjusted_pred[5] *= 0.85  # Lower 'sad' confidence artificially
+                adjusted_pred[5] *= 0.85  # Lower 'sad' confidence
                 prediction_label = emotion_labels[np.argmax(adjusted_pred)]
                 confidence = np.max(pred)
 
-                # Add to emotion history
+                # Emotion tracking
                 emotion_history.append(prediction_label)
-
-                # Count recent negative emotions
                 negative_count = sum(1 for e in emotion_history if e in negative_emotions)
 
-                # Trigger response if threshold is exceeded
-                if negative_count >= 7:
-                    if not emotion_alert_sent and time.time() - last_emotion_message_time > emotion_cooldown:
-                        message = generate_gemini_response("The user has had negative facial expressions recently. Send an encouraging message.")
-                        requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
-                        emotion_alert_sent = True
-                        last_emotion_message_time = time.time()
-                        comforting_message_times.append(datetime.now())
-
-                else:
+                if negative_count >= 7 and not emotion_alert_sent and time.time() - last_emotion_message_time > emotion_cooldown:
+                    message = generate_gemini_response("The user has had negative facial expressions recently. Send an encouraging message.")
+                    requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
+                    emotion_alert_sent = True
+                    last_emotion_message_time = time.time()
+                    comforting_message_times.append(datetime.now())
+                elif negative_count < 7:
                     emotion_alert_sent = False
 
-                # Clean up old timestamps outside the window
+                # Clean up old timestamps
                 now = datetime.now()
                 comforting_message_times = deque(
                     t for t in comforting_message_times if now - t <= timedelta(minutes=comforting_message_window_minutes)
                 )
 
-                # If too many comforting messages recently, suggest a break
                 if len(comforting_message_times) > comforting_message_limit and not break_alert_sent:
-                    message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break from studying to rest and reset.")
+                    message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break.")
                     requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                     break_alert_sent = True
                 elif len(comforting_message_times) <= comforting_message_limit:
-                    break_alert_sent = False  # Reset once count drops
-
+                    break_alert_sent = False
 
                 cv2.putText(frame, f'{prediction_label}: {confidence*100:.2f}%', (x, y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-        # Record if flag is True
+        # Recording logic
         if recording_flag["status"]:
             recorded_frames.append(frame.copy())
-
         elif recorded_frames:  # Recording just stopped
             # Save sped-up video
-            sped_up_fps = fps * 4  # 4x speed
+            sped_up_fps = fps * 4
             video_path = get_video_path()
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4 codec
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             video_writer = cv2.VideoWriter(video_path, fourcc, sped_up_fps, frame_size)
 
-
-            for f in recorded_frames[::4]:  # Keep every 4th frame (4x speed)
+            for f in recorded_frames[::4]:  # Keep every 4th frame
                 resized = cv2.resize(f, frame_size)
                 video_writer.write(resized)
+            
             video_writer.release()
+            
+            # Save to database if user is logged in
+            if user_id:
+                save_video_to_db(user_id, video_path)
+            
             recorded_frames.clear()
 
         # Stream frame

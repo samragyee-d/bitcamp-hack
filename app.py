@@ -1,6 +1,6 @@
 # app.py
 
-from flask import Flask, render_template, request, redirect, url_for, Response, flash
+from flask import Flask, render_template, request, redirect, url_for, Response, flash, session
 import cv2
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -97,33 +97,38 @@ def register():
 
     return render_template('registration.html')
 
+from flask import session
+
+# Add this helper function for database connection
+def get_db_connection():
+    return mysql.connector.connect(
+        host=MYSQL_HOST,
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database=MYSQL_DATABASE
+    )
+
+# Update your logout route to store user_id in session
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user_input = request.form['username']
         password = request.form['password']
 
-        # Connect to MySQL
-        connection = mysql.connector.connect(
-            host=MYSQL_HOST,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE
-        )
-        cursor = connection.cursor()
-        cursor.execute("SELECT password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
-        result = cursor.fetchone()
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT id, username, password FROM users WHERE username=%s OR email=%s", (user_input, user_input))
+        user = cursor.fetchone()
         cursor.close()
         connection.close()
 
-        if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
-            return redirect(url_for('home', login = 'true'))
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            session['user_id'] = user['id']  # Store user ID in session
+            return redirect(url_for('home', login='true'))
         else:
             flash("Invalid credentials. Please try again.")
             return redirect(url_for('login'))
-
     return render_template('Login.html')
-
 
 @app.route('/video')
 def video():
@@ -186,13 +191,81 @@ from flask import session
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording():
+    if 'user_id' not in session:
+        return jsonify({"error": "Not logged in"}), 401
+        
     recording_flag["status"] = True
-    return "Recording started"
+    recording_flag["user_id"] = session['user_id']
+    return jsonify({"status": "Recording started"})
+
+
+# Make sure this function is present in your file
+def save_video_to_db(user_id, video_path):
+    conn = mysql.connector.connect(
+    host=MYSQL_HOST,
+    user=MYSQL_USER,
+    password=MYSQL_PASSWORD,
+    database=MYSQL_DATABASE
+)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO videos (user_id, video_path) VALUES (%s, %s)", (user_id, video_path))
+    conn.commit()
+    conn.close()
+    return True
+
+
+@app.route('/save_video', methods=['POST'])
+def save_video():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    if 'video_file' not in request.files:
+        return jsonify({'error': 'No video file provided'}), 400
+
+    video_file = request.files['video_file']
+    if video_file:
+        try:
+            video_data = video_file.read()  # Read the video file as binary data
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                INSERT INTO user_videos (user_id, video_data, created_at)
+                VALUES (%s, %s, NOW())
+            """, (session['user_id'], video_data))
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+            return jsonify({'message': 'Video saved to database!'})
+
+        except mysql.connector.Error as err:
+            return jsonify({'error': f'Database error: {err}'}), 500
+
+@app.route('/video_feed_function/<int:video_id>')
+def video_feed_function(video_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT video_data FROM user_videos WHERE id = %s", (video_id,))
+    video_data = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    if video_data:
+        return Response(
+            video_data[0],
+            mimetype='video/mp4'
+        )
+    else:
+        return "Video not found", 404
+
+
 
 @app.route('/stop_recording', methods=['POST'])
 def stop_recording():
     recording_flag["status"] = False
-    return "Recording stopped"
+    return jsonify({"status": "Recording stopped"})
 
 @app.route('/download')
 def download_video():
@@ -202,14 +275,32 @@ def download_video():
 def recording_status():
     return jsonify({"status": recording_flag["status"]})
 
-# BASIC FLASK
-@app.route('/pagename')
-def pagename():
-    return render_template('pagename.html')
 
-@app.route('/logout')
+@app.route('/my_videos')
+def my_videos():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id, created_at FROM user_videos WHERE user_id = %s ORDER BY created_at DESC",
+            (session['user_id'],)
+        )
+        videos = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        
+        return render_template('my_videos.html', videos=videos)
+    except mysql.connector.Error as err:
+        print(f"Error fetching videos: {err}")
+        return render_template('my_videos.html', videos=[], error="Error loading videos")
+
+
+'''@app.route('/logout')
 def logout():
-    return render_template('logout.html')
+    return render_template('logout.html')'''
 
 
 '''
