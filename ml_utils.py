@@ -114,7 +114,7 @@ def generate_frames():
                 phone_detected_start = time.time()
             elif not phone_alert_sent and time.time() - phone_detected_start >= phone_detection_threshold:
                 if time.time() - last_phone_message_time > phone_cooldown:
-                    response = generate_gemini_response("Send a message scolding the user for having a phone present.")
+                    response = generate_gemini_response("Send a message telling the user to put down their phone and get back to studying.")
                     phone_alert_sent = True
                     last_phone_message_time = time.time()
                     requests.post("http://127.0.0.1:5000/push_system_message", json={"message": response})
@@ -156,7 +156,7 @@ def generate_frames():
                 # Trigger response if threshold is exceeded
                 if negative_count >= 7:
                     if not emotion_alert_sent and time.time() - last_emotion_message_time > emotion_cooldown:
-                        message = generate_gemini_response("The user seems emotionally distressed. Please send a short comforting or encouraging message.")
+                        message = generate_gemini_response("The user has had negative facial expressions recently. Send an encouraging message.")
                         requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                         emotion_alert_sent = True
                         last_emotion_message_time = time.time()
@@ -173,7 +173,7 @@ def generate_frames():
 
                 # If too many comforting messages recently, suggest a break
                 if len(comforting_message_times) > comforting_message_limit and not break_alert_sent:
-                    message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break to rest and reset.")
+                    message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break from studying to rest and reset.")
                     requests.post("http://127.0.0.1:5000/push_system_message", json={"message": message})
                     break_alert_sent = True
                 elif len(comforting_message_times) <= comforting_message_limit:

@@ -6,6 +6,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import cv2
 import numpy as np
+import requests
+
 
 
 #SQL setup
@@ -125,6 +127,9 @@ def video():
 @app.route('/backendvideo')
 def backendvideo():
     global recording
+    # --- Send welcome message on startup ---
+    welcome_message = generate_gemini_response("Welcome the user to their study session with a friendly and motivating tone.")
+    requests.post("http://127.0.0.1:5000/push_system_message", json={"message": welcome_message})
     return render_template('backendvideo.html', is_recording=recording_flag["status"])
 
 
