@@ -6,7 +6,7 @@ from tensorflow.keras.models import load_model
 from dotenv import load_dotenv
 from gemini import generate_gemini_response
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from state import chat_history, recording_flag
 import mysql.connector
@@ -183,9 +183,9 @@ def generate_frames():
 
                 # Clean up old timestamps
                 now = datetime.now()
-                comforting_message_times = deque(
-                    t for t in comforting_message_times if now - t <= timedelta(minutes=comforting_message_window_minutes)
-                )
+                recent_times = [t for t in comforting_message_times if now - t <= timedelta(minutes=comforting_message_window_minutes)]
+                comforting_message_times = deque(recent_times)
+
 
                 if len(comforting_message_times) > comforting_message_limit and not break_alert_sent:
                     message = generate_gemini_response("The user has received multiple comforting messages recently. Recommend taking a short break.")
