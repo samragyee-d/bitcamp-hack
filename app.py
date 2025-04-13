@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 from ml_utils import generate_frames
 import bcrypt
 import os
-from state import clear_chat_history
+from state import clear_chat_history, recording_flag
+
 
 #Import Environment Variables
 load_dotenv()
@@ -159,6 +160,22 @@ def push_system_message():
         system_message_queue.put(message)
     return jsonify({'status': 'success'})
 
+
+from flask import session
+
+@app.route('/start_recording', methods=['POST'])
+def start_recording():
+    recording_flag["status"] = True
+    return "Recording started"
+
+@app.route('/stop_recording', methods=['POST'])
+def stop_recording():
+    recording_flag["status"] = False
+    return "Recording stopped"
+
+@app.route('/download')
+def download_video():
+    return redirect(url_for('static', filename='recorded.mp4'))
 
 # BASIC FLASK
 @app.route('/pagename')

@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 from gemini import generate_gemini_response
 import time
 import requests
-from state import chat_history
+from state import chat_history, recording_flag
+
 
 
 load_dotenv()
@@ -65,18 +66,32 @@ chat_history = []
 last_phone_message_time = time.time()
 last_emotion_message_time = time.time()
 
-phone_cooldown = 0.5     # seconds
+phone_cooldown = 1     # seconds
 emotion_cooldown = 2  # seconds
 
-def generate_frames():
-    cap = cv2.VideoCapture(0)
+from datetime import datetime
+import cv2
 
-    global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history, last_phone_message_time, last_emotion_message_time, phone_cooldown, emotion_cooldown
+video_writer = None
+recorded_frames = []
+video_path = "static/recorded.mp4"
+frame_size = (640, 480)
+fps = 20  # Normal capture rate
+
+def generate_frames():
+    global video_writer, recorded_frames
+
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_size[0])
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_size[1])
 
     while True:
         success, frame = cap.read()
         if not success:
             break
+
+        global phone_detected_start, phone_alert_sent, emotion_history, negative_emotions, emotion_alert_sent, comforting_message_times, comforting_message_limit, comforting_message_window_minutes, break_alert_sent, chat_history, last_phone_message_time, last_emotion_message_time, phone_cooldown, emotion_cooldown
+
 
         # Step 1: Run YOLO for phone detection
         results = model(frame)
@@ -168,7 +183,25 @@ def generate_frames():
                 cv2.putText(frame, f'{prediction_label}: {confidence*100:.2f}%', (x, y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-        # Return frame as byte stream
+        # Record if flag is True
+        if recording_flag["status"]:
+            recorded_frames.append(frame.copy())
+
+        elif recorded_frames:  # Recording just stopped
+            # Save sped-up video
+            sped_up_fps = fps * 4  # 4x speed
+            video_path = "static/recorded.mp4"  # Save to static folder as MP4
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # MP4 codec
+            video_writer = cv2.VideoWriter(video_path, fourcc, sped_up_fps, frame_size)
+
+
+            for f in recorded_frames[::4]:  # Keep every 4th frame (4x speed)
+                resized = cv2.resize(f, frame_size)
+                video_writer.write(resized)
+            video_writer.release()
+            recorded_frames.clear()
+
+        # Stream frame
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
